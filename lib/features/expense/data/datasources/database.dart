@@ -38,7 +38,8 @@ class Budgets extends Table {
 
 @DriftDatabase(tables: [Categories, Expenses, Budgets])
 class AppDatabase extends _$AppDatabase {
-  AppDatabase() : super(openConnection());
+  // On accepte un executor externe pour les tests
+  AppDatabase([QueryExecutor? executor]) : super(executor ?? openConnection());
 
   @override
   int get schemaVersion => 2; // On incrémente la version car on ajoute une table
