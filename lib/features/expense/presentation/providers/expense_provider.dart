@@ -4,11 +4,13 @@ import 'package:expense_ai_app/core/providers/database_provider.dart';
 import 'package:expense_ai_app/features/expense/data/datasources/database.dart';
 import 'package:expense_ai_app/features/expense/data/repositories/expense_repository_impl.dart';
 import 'package:expense_ai_app/features/expense/domain/repositories/expense_repository.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 // Provider pour le Repository
 final expenseRepositoryProvider = Provider<ExpenseRepository>((ref) {
   final db = ref.watch(databaseProvider);
-  return ExpenseRepositoryImpl(db);
+  final supabase = Supabase.instance.client; // On récupère l'instance de Supabase
+  return ExpenseRepositoryImpl(db, supabase);
 });
 
 // Provider pour la liste des catégories (pour le dropdown)

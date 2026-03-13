@@ -1,3 +1,4 @@
+import 'package:expense_ai_app/features/auth/presentation/providers/auth_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:drift/drift.dart' as drift;
@@ -59,6 +60,12 @@ class _AddExpenseSheetState extends ConsumerState<AddExpenseSheet> {
           categoryId: drift.Value(_selectedCategory?.id),
         );
         await ref.read(expenseRepositoryProvider).addExpense(expense);
+
+        // TENTER LA SYNC IMMEDIATE
+        final user = ref.read(currentUserProvider);
+        if (user != null) {
+          await ref.read(expenseRepositoryProvider).syncExpenses(user.id);
+        }
       }
 
       if (mounted) Navigator.pop(context);

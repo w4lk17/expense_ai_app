@@ -1,4 +1,5 @@
 import 'package:drift/drift.dart';
+import 'package:drift/drift.dart' as drift;
 
 import '../../../../core/database/connection.dart';
 
@@ -105,6 +106,18 @@ class AppDatabase extends _$AppDatabase {
         return ExpenseWithCategory(expense, category);
       }).toList();
     });
+  }
+
+  // Récupérer les dépenses non synchronisées
+  Future<List<Expense>> getUnsyncedExpenses() {
+    return (select(expenses)..where((t) => t.isSynced.equals(false))).get();
+  }
+
+  // Mettre à jour le statut de synchronisation
+  Future<void> updateSyncStatus(int id, bool isSynced) {
+    return (update(
+      expenses,
+    )..where((t) => t.id.equals(id))).write(ExpensesCompanion(isSynced: drift.Value(isSynced)));
   }
 
   // --- BUDGETS DAO ---

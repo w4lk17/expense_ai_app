@@ -4,14 +4,16 @@ part of 'database.dart';
 
 // ignore_for_file: type=lint
 class $CategoriesTable extends Categories
-    with TableInfo<$CategoriesTable, Category> {
+    with drift.TableInfo<$CategoriesTable, Category> {
   @override
-  final GeneratedDatabase attachedDatabase;
+  final drift.GeneratedDatabase attachedDatabase;
   final String? _alias;
   $CategoriesTable(this.attachedDatabase, [this._alias]);
-  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  static const drift.VerificationMeta _idMeta = const drift.VerificationMeta(
+    'id',
+  );
   @override
-  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+  late final drift.GeneratedColumn<int> id = drift.GeneratedColumn<int>(
     'id',
     aliasedName,
     false,
@@ -22,9 +24,11 @@ class $CategoriesTable extends Categories
       'PRIMARY KEY AUTOINCREMENT',
     ),
   );
-  static const VerificationMeta _nameMeta = const VerificationMeta('name');
+  static const drift.VerificationMeta _nameMeta = const drift.VerificationMeta(
+    'name',
+  );
   @override
-  late final GeneratedColumn<String> name = GeneratedColumn<String>(
+  late final drift.GeneratedColumn<String> name = drift.GeneratedColumn<String>(
     'name',
     aliasedName,
     false,
@@ -35,49 +39,59 @@ class $CategoriesTable extends Categories
     type: DriftSqlType.string,
     requiredDuringInsert: true,
   );
-  static const VerificationMeta _colorMeta = const VerificationMeta('color');
+  static const drift.VerificationMeta _colorMeta = const drift.VerificationMeta(
+    'color',
+  );
   @override
-  late final GeneratedColumn<int> color = GeneratedColumn<int>(
+  late final drift.GeneratedColumn<int> color = drift.GeneratedColumn<int>(
     'color',
     aliasedName,
     true,
     type: DriftSqlType.int,
     requiredDuringInsert: false,
   );
-  static const VerificationMeta _iconMeta = const VerificationMeta('icon');
+  static const drift.VerificationMeta _iconMeta = const drift.VerificationMeta(
+    'icon',
+  );
   @override
-  late final GeneratedColumn<int> icon = GeneratedColumn<int>(
+  late final drift.GeneratedColumn<int> icon = drift.GeneratedColumn<int>(
     'icon',
     aliasedName,
     true,
     type: DriftSqlType.int,
     requiredDuringInsert: false,
   );
-  static const VerificationMeta _createdAtMeta = const VerificationMeta(
-    'createdAt',
-  );
+  static const drift.VerificationMeta _createdAtMeta =
+      const drift.VerificationMeta('createdAt');
   @override
-  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
-    'created_at',
-    aliasedName,
-    false,
-    type: DriftSqlType.dateTime,
-    requiredDuringInsert: false,
-    defaultValue: currentDateAndTime,
-  );
+  late final drift.GeneratedColumn<DateTime> createdAt =
+      drift.GeneratedColumn<DateTime>(
+        'created_at',
+        aliasedName,
+        false,
+        type: DriftSqlType.dateTime,
+        requiredDuringInsert: false,
+        defaultValue: drift.currentDateAndTime,
+      );
   @override
-  List<GeneratedColumn> get $columns => [id, name, color, icon, createdAt];
+  List<drift.GeneratedColumn> get $columns => [
+    id,
+    name,
+    color,
+    icon,
+    createdAt,
+  ];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
   String get actualTableName => $name;
   static const String $name = 'categories';
   @override
-  VerificationContext validateIntegrity(
-    Insertable<Category> instance, {
+  drift.VerificationContext validateIntegrity(
+    drift.Insertable<Category> instance, {
     bool isInserting = false,
   }) {
-    final context = VerificationContext();
+    final context = drift.VerificationContext();
     final data = instance.toColumns(true);
     if (data.containsKey('id')) {
       context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
@@ -112,7 +126,7 @@ class $CategoriesTable extends Categories
   }
 
   @override
-  Set<GeneratedColumn> get $primaryKey => {id};
+  Set<drift.GeneratedColumn> get $primaryKey => {id};
   @override
   Category map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
@@ -146,7 +160,7 @@ class $CategoriesTable extends Categories
   }
 }
 
-class Category extends DataClass implements Insertable<Category> {
+class Category extends drift.DataClass implements drift.Insertable<Category> {
   final int id;
   final String name;
   final int? color;
@@ -160,29 +174,31 @@ class Category extends DataClass implements Insertable<Category> {
     required this.createdAt,
   });
   @override
-  Map<String, Expression> toColumns(bool nullToAbsent) {
-    final map = <String, Expression>{};
-    map['id'] = Variable<int>(id);
-    map['name'] = Variable<String>(name);
+  Map<String, drift.Expression> toColumns(bool nullToAbsent) {
+    final map = <String, drift.Expression>{};
+    map['id'] = drift.Variable<int>(id);
+    map['name'] = drift.Variable<String>(name);
     if (!nullToAbsent || color != null) {
-      map['color'] = Variable<int>(color);
+      map['color'] = drift.Variable<int>(color);
     }
     if (!nullToAbsent || icon != null) {
-      map['icon'] = Variable<int>(icon);
+      map['icon'] = drift.Variable<int>(icon);
     }
-    map['created_at'] = Variable<DateTime>(createdAt);
+    map['created_at'] = drift.Variable<DateTime>(createdAt);
     return map;
   }
 
   CategoriesCompanion toCompanion(bool nullToAbsent) {
     return CategoriesCompanion(
-      id: Value(id),
-      name: Value(name),
+      id: drift.Value(id),
+      name: drift.Value(name),
       color: color == null && nullToAbsent
-          ? const Value.absent()
-          : Value(color),
-      icon: icon == null && nullToAbsent ? const Value.absent() : Value(icon),
-      createdAt: Value(createdAt),
+          ? const drift.Value.absent()
+          : drift.Value(color),
+      icon: icon == null && nullToAbsent
+          ? const drift.Value.absent()
+          : drift.Value(icon),
+      createdAt: drift.Value(createdAt),
     );
   }
 
@@ -190,7 +206,7 @@ class Category extends DataClass implements Insertable<Category> {
     Map<String, dynamic> json, {
     ValueSerializer? serializer,
   }) {
-    serializer ??= driftRuntimeOptions.defaultSerializer;
+    serializer ??= drift.driftRuntimeOptions.defaultSerializer;
     return Category(
       id: serializer.fromJson<int>(json['id']),
       name: serializer.fromJson<String>(json['name']),
@@ -201,7 +217,7 @@ class Category extends DataClass implements Insertable<Category> {
   }
   @override
   Map<String, dynamic> toJson({ValueSerializer? serializer}) {
-    serializer ??= driftRuntimeOptions.defaultSerializer;
+    serializer ??= drift.driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
       'id': serializer.toJson<int>(id),
       'name': serializer.toJson<String>(name),
@@ -214,8 +230,8 @@ class Category extends DataClass implements Insertable<Category> {
   Category copyWith({
     int? id,
     String? name,
-    Value<int?> color = const Value.absent(),
-    Value<int?> icon = const Value.absent(),
+    drift.Value<int?> color = const drift.Value.absent(),
+    drift.Value<int?> icon = const drift.Value.absent(),
     DateTime? createdAt,
   }) => Category(
     id: id ?? this.id,
@@ -259,34 +275,34 @@ class Category extends DataClass implements Insertable<Category> {
           other.createdAt == this.createdAt);
 }
 
-class CategoriesCompanion extends UpdateCompanion<Category> {
-  final Value<int> id;
-  final Value<String> name;
-  final Value<int?> color;
-  final Value<int?> icon;
-  final Value<DateTime> createdAt;
+class CategoriesCompanion extends drift.UpdateCompanion<Category> {
+  final drift.Value<int> id;
+  final drift.Value<String> name;
+  final drift.Value<int?> color;
+  final drift.Value<int?> icon;
+  final drift.Value<DateTime> createdAt;
   const CategoriesCompanion({
-    this.id = const Value.absent(),
-    this.name = const Value.absent(),
-    this.color = const Value.absent(),
-    this.icon = const Value.absent(),
-    this.createdAt = const Value.absent(),
+    this.id = const drift.Value.absent(),
+    this.name = const drift.Value.absent(),
+    this.color = const drift.Value.absent(),
+    this.icon = const drift.Value.absent(),
+    this.createdAt = const drift.Value.absent(),
   });
   CategoriesCompanion.insert({
-    this.id = const Value.absent(),
+    this.id = const drift.Value.absent(),
     required String name,
-    this.color = const Value.absent(),
-    this.icon = const Value.absent(),
-    this.createdAt = const Value.absent(),
-  }) : name = Value(name);
-  static Insertable<Category> custom({
-    Expression<int>? id,
-    Expression<String>? name,
-    Expression<int>? color,
-    Expression<int>? icon,
-    Expression<DateTime>? createdAt,
+    this.color = const drift.Value.absent(),
+    this.icon = const drift.Value.absent(),
+    this.createdAt = const drift.Value.absent(),
+  }) : name = drift.Value(name);
+  static drift.Insertable<Category> custom({
+    drift.Expression<int>? id,
+    drift.Expression<String>? name,
+    drift.Expression<int>? color,
+    drift.Expression<int>? icon,
+    drift.Expression<DateTime>? createdAt,
   }) {
-    return RawValuesInsertable({
+    return drift.RawValuesInsertable({
       if (id != null) 'id': id,
       if (name != null) 'name': name,
       if (color != null) 'color': color,
@@ -296,11 +312,11 @@ class CategoriesCompanion extends UpdateCompanion<Category> {
   }
 
   CategoriesCompanion copyWith({
-    Value<int>? id,
-    Value<String>? name,
-    Value<int?>? color,
-    Value<int?>? icon,
-    Value<DateTime>? createdAt,
+    drift.Value<int>? id,
+    drift.Value<String>? name,
+    drift.Value<int?>? color,
+    drift.Value<int?>? icon,
+    drift.Value<DateTime>? createdAt,
   }) {
     return CategoriesCompanion(
       id: id ?? this.id,
@@ -312,22 +328,22 @@ class CategoriesCompanion extends UpdateCompanion<Category> {
   }
 
   @override
-  Map<String, Expression> toColumns(bool nullToAbsent) {
-    final map = <String, Expression>{};
+  Map<String, drift.Expression> toColumns(bool nullToAbsent) {
+    final map = <String, drift.Expression>{};
     if (id.present) {
-      map['id'] = Variable<int>(id.value);
+      map['id'] = drift.Variable<int>(id.value);
     }
     if (name.present) {
-      map['name'] = Variable<String>(name.value);
+      map['name'] = drift.Variable<String>(name.value);
     }
     if (color.present) {
-      map['color'] = Variable<int>(color.value);
+      map['color'] = drift.Variable<int>(color.value);
     }
     if (icon.present) {
-      map['icon'] = Variable<int>(icon.value);
+      map['icon'] = drift.Variable<int>(icon.value);
     }
     if (createdAt.present) {
-      map['created_at'] = Variable<DateTime>(createdAt.value);
+      map['created_at'] = drift.Variable<DateTime>(createdAt.value);
     }
     return map;
   }
@@ -345,14 +361,17 @@ class CategoriesCompanion extends UpdateCompanion<Category> {
   }
 }
 
-class $ExpensesTable extends Expenses with TableInfo<$ExpensesTable, Expense> {
+class $ExpensesTable extends Expenses
+    with drift.TableInfo<$ExpensesTable, Expense> {
   @override
-  final GeneratedDatabase attachedDatabase;
+  final drift.GeneratedDatabase attachedDatabase;
   final String? _alias;
   $ExpensesTable(this.attachedDatabase, [this._alias]);
-  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  static const drift.VerificationMeta _idMeta = const drift.VerificationMeta(
+    'id',
+  );
   @override
-  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+  late final drift.GeneratedColumn<int> id = drift.GeneratedColumn<int>(
     'id',
     aliasedName,
     false,
@@ -363,31 +382,32 @@ class $ExpensesTable extends Expenses with TableInfo<$ExpensesTable, Expense> {
       'PRIMARY KEY AUTOINCREMENT',
     ),
   );
-  static const VerificationMeta _amountMeta = const VerificationMeta('amount');
+  static const drift.VerificationMeta _amountMeta =
+      const drift.VerificationMeta('amount');
   @override
-  late final GeneratedColumn<double> amount = GeneratedColumn<double>(
-    'amount',
-    aliasedName,
-    false,
-    type: DriftSqlType.double,
-    requiredDuringInsert: true,
-  );
-  static const VerificationMeta _descriptionMeta = const VerificationMeta(
-    'description',
-  );
+  late final drift.GeneratedColumn<double> amount =
+      drift.GeneratedColumn<double>(
+        'amount',
+        aliasedName,
+        false,
+        type: DriftSqlType.double,
+        requiredDuringInsert: true,
+      );
+  static const drift.VerificationMeta _descriptionMeta =
+      const drift.VerificationMeta('description');
   @override
-  late final GeneratedColumn<String> description = GeneratedColumn<String>(
-    'description',
-    aliasedName,
-    true,
-    type: DriftSqlType.string,
-    requiredDuringInsert: false,
-  );
-  static const VerificationMeta _categoryIdMeta = const VerificationMeta(
-    'categoryId',
-  );
+  late final drift.GeneratedColumn<String> description =
+      drift.GeneratedColumn<String>(
+        'description',
+        aliasedName,
+        true,
+        type: DriftSqlType.string,
+        requiredDuringInsert: false,
+      );
+  static const drift.VerificationMeta _categoryIdMeta =
+      const drift.VerificationMeta('categoryId');
   @override
-  late final GeneratedColumn<int> categoryId = GeneratedColumn<int>(
+  late final drift.GeneratedColumn<int> categoryId = drift.GeneratedColumn<int>(
     'category_id',
     aliasedName,
     true,
@@ -397,43 +417,45 @@ class $ExpensesTable extends Expenses with TableInfo<$ExpensesTable, Expense> {
       'REFERENCES categories (id)',
     ),
   );
-  static const VerificationMeta _dateMeta = const VerificationMeta('date');
-  @override
-  late final GeneratedColumn<DateTime> date = GeneratedColumn<DateTime>(
+  static const drift.VerificationMeta _dateMeta = const drift.VerificationMeta(
     'date',
-    aliasedName,
-    false,
-    type: DriftSqlType.dateTime,
-    requiredDuringInsert: true,
-  );
-  static const VerificationMeta _paymentMethodMeta = const VerificationMeta(
-    'paymentMethod',
   );
   @override
-  late final GeneratedColumn<String> paymentMethod = GeneratedColumn<String>(
-    'payment_method',
-    aliasedName,
-    true,
-    type: DriftSqlType.string,
-    requiredDuringInsert: false,
-  );
-  static const VerificationMeta _createdAtMeta = const VerificationMeta(
-    'createdAt',
-  );
+  late final drift.GeneratedColumn<DateTime> date =
+      drift.GeneratedColumn<DateTime>(
+        'date',
+        aliasedName,
+        false,
+        type: DriftSqlType.dateTime,
+        requiredDuringInsert: true,
+      );
+  static const drift.VerificationMeta _paymentMethodMeta =
+      const drift.VerificationMeta('paymentMethod');
   @override
-  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
-    'created_at',
-    aliasedName,
-    false,
-    type: DriftSqlType.dateTime,
-    requiredDuringInsert: false,
-    defaultValue: currentDateAndTime,
-  );
-  static const VerificationMeta _isSyncedMeta = const VerificationMeta(
-    'isSynced',
-  );
+  late final drift.GeneratedColumn<String> paymentMethod =
+      drift.GeneratedColumn<String>(
+        'payment_method',
+        aliasedName,
+        true,
+        type: DriftSqlType.string,
+        requiredDuringInsert: false,
+      );
+  static const drift.VerificationMeta _createdAtMeta =
+      const drift.VerificationMeta('createdAt');
   @override
-  late final GeneratedColumn<bool> isSynced = GeneratedColumn<bool>(
+  late final drift.GeneratedColumn<DateTime> createdAt =
+      drift.GeneratedColumn<DateTime>(
+        'created_at',
+        aliasedName,
+        false,
+        type: DriftSqlType.dateTime,
+        requiredDuringInsert: false,
+        defaultValue: drift.currentDateAndTime,
+      );
+  static const drift.VerificationMeta _isSyncedMeta =
+      const drift.VerificationMeta('isSynced');
+  @override
+  late final drift.GeneratedColumn<bool> isSynced = drift.GeneratedColumn<bool>(
     'is_synced',
     aliasedName,
     false,
@@ -442,10 +464,10 @@ class $ExpensesTable extends Expenses with TableInfo<$ExpensesTable, Expense> {
     defaultConstraints: GeneratedColumn.constraintIsAlways(
       'CHECK ("is_synced" IN (0, 1))',
     ),
-    defaultValue: const Constant(false),
+    defaultValue: const drift.Constant(false),
   );
   @override
-  List<GeneratedColumn> get $columns => [
+  List<drift.GeneratedColumn> get $columns => [
     id,
     amount,
     description,
@@ -461,11 +483,11 @@ class $ExpensesTable extends Expenses with TableInfo<$ExpensesTable, Expense> {
   String get actualTableName => $name;
   static const String $name = 'expenses';
   @override
-  VerificationContext validateIntegrity(
-    Insertable<Expense> instance, {
+  drift.VerificationContext validateIntegrity(
+    drift.Insertable<Expense> instance, {
     bool isInserting = false,
   }) {
-    final context = VerificationContext();
+    final context = drift.VerificationContext();
     final data = instance.toColumns(true);
     if (data.containsKey('id')) {
       context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
@@ -526,7 +548,7 @@ class $ExpensesTable extends Expenses with TableInfo<$ExpensesTable, Expense> {
   }
 
   @override
-  Set<GeneratedColumn> get $primaryKey => {id};
+  Set<drift.GeneratedColumn> get $primaryKey => {id};
   @override
   Expense map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
@@ -572,7 +594,7 @@ class $ExpensesTable extends Expenses with TableInfo<$ExpensesTable, Expense> {
   }
 }
 
-class Expense extends DataClass implements Insertable<Expense> {
+class Expense extends drift.DataClass implements drift.Insertable<Expense> {
   final int id;
   final double amount;
   final String? description;
@@ -592,41 +614,41 @@ class Expense extends DataClass implements Insertable<Expense> {
     required this.isSynced,
   });
   @override
-  Map<String, Expression> toColumns(bool nullToAbsent) {
-    final map = <String, Expression>{};
-    map['id'] = Variable<int>(id);
-    map['amount'] = Variable<double>(amount);
+  Map<String, drift.Expression> toColumns(bool nullToAbsent) {
+    final map = <String, drift.Expression>{};
+    map['id'] = drift.Variable<int>(id);
+    map['amount'] = drift.Variable<double>(amount);
     if (!nullToAbsent || description != null) {
-      map['description'] = Variable<String>(description);
+      map['description'] = drift.Variable<String>(description);
     }
     if (!nullToAbsent || categoryId != null) {
-      map['category_id'] = Variable<int>(categoryId);
+      map['category_id'] = drift.Variable<int>(categoryId);
     }
-    map['date'] = Variable<DateTime>(date);
+    map['date'] = drift.Variable<DateTime>(date);
     if (!nullToAbsent || paymentMethod != null) {
-      map['payment_method'] = Variable<String>(paymentMethod);
+      map['payment_method'] = drift.Variable<String>(paymentMethod);
     }
-    map['created_at'] = Variable<DateTime>(createdAt);
-    map['is_synced'] = Variable<bool>(isSynced);
+    map['created_at'] = drift.Variable<DateTime>(createdAt);
+    map['is_synced'] = drift.Variable<bool>(isSynced);
     return map;
   }
 
   ExpensesCompanion toCompanion(bool nullToAbsent) {
     return ExpensesCompanion(
-      id: Value(id),
-      amount: Value(amount),
+      id: drift.Value(id),
+      amount: drift.Value(amount),
       description: description == null && nullToAbsent
-          ? const Value.absent()
-          : Value(description),
+          ? const drift.Value.absent()
+          : drift.Value(description),
       categoryId: categoryId == null && nullToAbsent
-          ? const Value.absent()
-          : Value(categoryId),
-      date: Value(date),
+          ? const drift.Value.absent()
+          : drift.Value(categoryId),
+      date: drift.Value(date),
       paymentMethod: paymentMethod == null && nullToAbsent
-          ? const Value.absent()
-          : Value(paymentMethod),
-      createdAt: Value(createdAt),
-      isSynced: Value(isSynced),
+          ? const drift.Value.absent()
+          : drift.Value(paymentMethod),
+      createdAt: drift.Value(createdAt),
+      isSynced: drift.Value(isSynced),
     );
   }
 
@@ -634,7 +656,7 @@ class Expense extends DataClass implements Insertable<Expense> {
     Map<String, dynamic> json, {
     ValueSerializer? serializer,
   }) {
-    serializer ??= driftRuntimeOptions.defaultSerializer;
+    serializer ??= drift.driftRuntimeOptions.defaultSerializer;
     return Expense(
       id: serializer.fromJson<int>(json['id']),
       amount: serializer.fromJson<double>(json['amount']),
@@ -648,7 +670,7 @@ class Expense extends DataClass implements Insertable<Expense> {
   }
   @override
   Map<String, dynamic> toJson({ValueSerializer? serializer}) {
-    serializer ??= driftRuntimeOptions.defaultSerializer;
+    serializer ??= drift.driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
       'id': serializer.toJson<int>(id),
       'amount': serializer.toJson<double>(amount),
@@ -664,10 +686,10 @@ class Expense extends DataClass implements Insertable<Expense> {
   Expense copyWith({
     int? id,
     double? amount,
-    Value<String?> description = const Value.absent(),
-    Value<int?> categoryId = const Value.absent(),
+    drift.Value<String?> description = const drift.Value.absent(),
+    drift.Value<int?> categoryId = const drift.Value.absent(),
     DateTime? date,
-    Value<String?> paymentMethod = const Value.absent(),
+    drift.Value<String?> paymentMethod = const drift.Value.absent(),
     DateTime? createdAt,
     bool? isSynced,
   }) => Expense(
@@ -741,47 +763,47 @@ class Expense extends DataClass implements Insertable<Expense> {
           other.isSynced == this.isSynced);
 }
 
-class ExpensesCompanion extends UpdateCompanion<Expense> {
-  final Value<int> id;
-  final Value<double> amount;
-  final Value<String?> description;
-  final Value<int?> categoryId;
-  final Value<DateTime> date;
-  final Value<String?> paymentMethod;
-  final Value<DateTime> createdAt;
-  final Value<bool> isSynced;
+class ExpensesCompanion extends drift.UpdateCompanion<Expense> {
+  final drift.Value<int> id;
+  final drift.Value<double> amount;
+  final drift.Value<String?> description;
+  final drift.Value<int?> categoryId;
+  final drift.Value<DateTime> date;
+  final drift.Value<String?> paymentMethod;
+  final drift.Value<DateTime> createdAt;
+  final drift.Value<bool> isSynced;
   const ExpensesCompanion({
-    this.id = const Value.absent(),
-    this.amount = const Value.absent(),
-    this.description = const Value.absent(),
-    this.categoryId = const Value.absent(),
-    this.date = const Value.absent(),
-    this.paymentMethod = const Value.absent(),
-    this.createdAt = const Value.absent(),
-    this.isSynced = const Value.absent(),
+    this.id = const drift.Value.absent(),
+    this.amount = const drift.Value.absent(),
+    this.description = const drift.Value.absent(),
+    this.categoryId = const drift.Value.absent(),
+    this.date = const drift.Value.absent(),
+    this.paymentMethod = const drift.Value.absent(),
+    this.createdAt = const drift.Value.absent(),
+    this.isSynced = const drift.Value.absent(),
   });
   ExpensesCompanion.insert({
-    this.id = const Value.absent(),
+    this.id = const drift.Value.absent(),
     required double amount,
-    this.description = const Value.absent(),
-    this.categoryId = const Value.absent(),
+    this.description = const drift.Value.absent(),
+    this.categoryId = const drift.Value.absent(),
     required DateTime date,
-    this.paymentMethod = const Value.absent(),
-    this.createdAt = const Value.absent(),
-    this.isSynced = const Value.absent(),
-  }) : amount = Value(amount),
-       date = Value(date);
-  static Insertable<Expense> custom({
-    Expression<int>? id,
-    Expression<double>? amount,
-    Expression<String>? description,
-    Expression<int>? categoryId,
-    Expression<DateTime>? date,
-    Expression<String>? paymentMethod,
-    Expression<DateTime>? createdAt,
-    Expression<bool>? isSynced,
+    this.paymentMethod = const drift.Value.absent(),
+    this.createdAt = const drift.Value.absent(),
+    this.isSynced = const drift.Value.absent(),
+  }) : amount = drift.Value(amount),
+       date = drift.Value(date);
+  static drift.Insertable<Expense> custom({
+    drift.Expression<int>? id,
+    drift.Expression<double>? amount,
+    drift.Expression<String>? description,
+    drift.Expression<int>? categoryId,
+    drift.Expression<DateTime>? date,
+    drift.Expression<String>? paymentMethod,
+    drift.Expression<DateTime>? createdAt,
+    drift.Expression<bool>? isSynced,
   }) {
-    return RawValuesInsertable({
+    return drift.RawValuesInsertable({
       if (id != null) 'id': id,
       if (amount != null) 'amount': amount,
       if (description != null) 'description': description,
@@ -794,14 +816,14 @@ class ExpensesCompanion extends UpdateCompanion<Expense> {
   }
 
   ExpensesCompanion copyWith({
-    Value<int>? id,
-    Value<double>? amount,
-    Value<String?>? description,
-    Value<int?>? categoryId,
-    Value<DateTime>? date,
-    Value<String?>? paymentMethod,
-    Value<DateTime>? createdAt,
-    Value<bool>? isSynced,
+    drift.Value<int>? id,
+    drift.Value<double>? amount,
+    drift.Value<String?>? description,
+    drift.Value<int?>? categoryId,
+    drift.Value<DateTime>? date,
+    drift.Value<String?>? paymentMethod,
+    drift.Value<DateTime>? createdAt,
+    drift.Value<bool>? isSynced,
   }) {
     return ExpensesCompanion(
       id: id ?? this.id,
@@ -816,31 +838,31 @@ class ExpensesCompanion extends UpdateCompanion<Expense> {
   }
 
   @override
-  Map<String, Expression> toColumns(bool nullToAbsent) {
-    final map = <String, Expression>{};
+  Map<String, drift.Expression> toColumns(bool nullToAbsent) {
+    final map = <String, drift.Expression>{};
     if (id.present) {
-      map['id'] = Variable<int>(id.value);
+      map['id'] = drift.Variable<int>(id.value);
     }
     if (amount.present) {
-      map['amount'] = Variable<double>(amount.value);
+      map['amount'] = drift.Variable<double>(amount.value);
     }
     if (description.present) {
-      map['description'] = Variable<String>(description.value);
+      map['description'] = drift.Variable<String>(description.value);
     }
     if (categoryId.present) {
-      map['category_id'] = Variable<int>(categoryId.value);
+      map['category_id'] = drift.Variable<int>(categoryId.value);
     }
     if (date.present) {
-      map['date'] = Variable<DateTime>(date.value);
+      map['date'] = drift.Variable<DateTime>(date.value);
     }
     if (paymentMethod.present) {
-      map['payment_method'] = Variable<String>(paymentMethod.value);
+      map['payment_method'] = drift.Variable<String>(paymentMethod.value);
     }
     if (createdAt.present) {
-      map['created_at'] = Variable<DateTime>(createdAt.value);
+      map['created_at'] = drift.Variable<DateTime>(createdAt.value);
     }
     if (isSynced.present) {
-      map['is_synced'] = Variable<bool>(isSynced.value);
+      map['is_synced'] = drift.Variable<bool>(isSynced.value);
     }
     return map;
   }
@@ -861,14 +883,17 @@ class ExpensesCompanion extends UpdateCompanion<Expense> {
   }
 }
 
-class $BudgetsTable extends Budgets with TableInfo<$BudgetsTable, Budget> {
+class $BudgetsTable extends Budgets
+    with drift.TableInfo<$BudgetsTable, Budget> {
   @override
-  final GeneratedDatabase attachedDatabase;
+  final drift.GeneratedDatabase attachedDatabase;
   final String? _alias;
   $BudgetsTable(this.attachedDatabase, [this._alias]);
-  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  static const drift.VerificationMeta _idMeta = const drift.VerificationMeta(
+    'id',
+  );
   @override
-  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+  late final drift.GeneratedColumn<int> id = drift.GeneratedColumn<int>(
     'id',
     aliasedName,
     false,
@@ -879,20 +904,21 @@ class $BudgetsTable extends Budgets with TableInfo<$BudgetsTable, Budget> {
       'PRIMARY KEY AUTOINCREMENT',
     ),
   );
-  static const VerificationMeta _amountMeta = const VerificationMeta('amount');
+  static const drift.VerificationMeta _amountMeta =
+      const drift.VerificationMeta('amount');
   @override
-  late final GeneratedColumn<double> amount = GeneratedColumn<double>(
-    'amount',
-    aliasedName,
-    false,
-    type: DriftSqlType.double,
-    requiredDuringInsert: true,
-  );
-  static const VerificationMeta _categoryIdMeta = const VerificationMeta(
-    'categoryId',
-  );
+  late final drift.GeneratedColumn<double> amount =
+      drift.GeneratedColumn<double>(
+        'amount',
+        aliasedName,
+        false,
+        type: DriftSqlType.double,
+        requiredDuringInsert: true,
+      );
+  static const drift.VerificationMeta _categoryIdMeta =
+      const drift.VerificationMeta('categoryId');
   @override
-  late final GeneratedColumn<int> categoryId = GeneratedColumn<int>(
+  late final drift.GeneratedColumn<int> categoryId = drift.GeneratedColumn<int>(
     'category_id',
     aliasedName,
     true,
@@ -902,38 +928,42 @@ class $BudgetsTable extends Budgets with TableInfo<$BudgetsTable, Budget> {
       'REFERENCES categories (id)',
     ),
   );
-  static const VerificationMeta _monthMeta = const VerificationMeta('month');
+  static const drift.VerificationMeta _monthMeta = const drift.VerificationMeta(
+    'month',
+  );
   @override
-  late final GeneratedColumn<int> month = GeneratedColumn<int>(
+  late final drift.GeneratedColumn<int> month = drift.GeneratedColumn<int>(
     'month',
     aliasedName,
     false,
     type: DriftSqlType.int,
     requiredDuringInsert: true,
   );
-  static const VerificationMeta _yearMeta = const VerificationMeta('year');
+  static const drift.VerificationMeta _yearMeta = const drift.VerificationMeta(
+    'year',
+  );
   @override
-  late final GeneratedColumn<int> year = GeneratedColumn<int>(
+  late final drift.GeneratedColumn<int> year = drift.GeneratedColumn<int>(
     'year',
     aliasedName,
     false,
     type: DriftSqlType.int,
     requiredDuringInsert: true,
   );
-  static const VerificationMeta _createdAtMeta = const VerificationMeta(
-    'createdAt',
-  );
+  static const drift.VerificationMeta _createdAtMeta =
+      const drift.VerificationMeta('createdAt');
   @override
-  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
-    'created_at',
-    aliasedName,
-    false,
-    type: DriftSqlType.dateTime,
-    requiredDuringInsert: false,
-    defaultValue: currentDateAndTime,
-  );
+  late final drift.GeneratedColumn<DateTime> createdAt =
+      drift.GeneratedColumn<DateTime>(
+        'created_at',
+        aliasedName,
+        false,
+        type: DriftSqlType.dateTime,
+        requiredDuringInsert: false,
+        defaultValue: drift.currentDateAndTime,
+      );
   @override
-  List<GeneratedColumn> get $columns => [
+  List<drift.GeneratedColumn> get $columns => [
     id,
     amount,
     categoryId,
@@ -947,11 +977,11 @@ class $BudgetsTable extends Budgets with TableInfo<$BudgetsTable, Budget> {
   String get actualTableName => $name;
   static const String $name = 'budgets';
   @override
-  VerificationContext validateIntegrity(
-    Insertable<Budget> instance, {
+  drift.VerificationContext validateIntegrity(
+    drift.Insertable<Budget> instance, {
     bool isInserting = false,
   }) {
-    final context = VerificationContext();
+    final context = drift.VerificationContext();
     final data = instance.toColumns(true);
     if (data.containsKey('id')) {
       context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
@@ -996,7 +1026,7 @@ class $BudgetsTable extends Budgets with TableInfo<$BudgetsTable, Budget> {
   }
 
   @override
-  Set<GeneratedColumn> get $primaryKey => {id};
+  Set<drift.GeneratedColumn> get $primaryKey => {id};
   @override
   Budget map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
@@ -1034,7 +1064,7 @@ class $BudgetsTable extends Budgets with TableInfo<$BudgetsTable, Budget> {
   }
 }
 
-class Budget extends DataClass implements Insertable<Budget> {
+class Budget extends drift.DataClass implements drift.Insertable<Budget> {
   final int id;
   final double amount;
   final int? categoryId;
@@ -1050,29 +1080,29 @@ class Budget extends DataClass implements Insertable<Budget> {
     required this.createdAt,
   });
   @override
-  Map<String, Expression> toColumns(bool nullToAbsent) {
-    final map = <String, Expression>{};
-    map['id'] = Variable<int>(id);
-    map['amount'] = Variable<double>(amount);
+  Map<String, drift.Expression> toColumns(bool nullToAbsent) {
+    final map = <String, drift.Expression>{};
+    map['id'] = drift.Variable<int>(id);
+    map['amount'] = drift.Variable<double>(amount);
     if (!nullToAbsent || categoryId != null) {
-      map['category_id'] = Variable<int>(categoryId);
+      map['category_id'] = drift.Variable<int>(categoryId);
     }
-    map['month'] = Variable<int>(month);
-    map['year'] = Variable<int>(year);
-    map['created_at'] = Variable<DateTime>(createdAt);
+    map['month'] = drift.Variable<int>(month);
+    map['year'] = drift.Variable<int>(year);
+    map['created_at'] = drift.Variable<DateTime>(createdAt);
     return map;
   }
 
   BudgetsCompanion toCompanion(bool nullToAbsent) {
     return BudgetsCompanion(
-      id: Value(id),
-      amount: Value(amount),
+      id: drift.Value(id),
+      amount: drift.Value(amount),
       categoryId: categoryId == null && nullToAbsent
-          ? const Value.absent()
-          : Value(categoryId),
-      month: Value(month),
-      year: Value(year),
-      createdAt: Value(createdAt),
+          ? const drift.Value.absent()
+          : drift.Value(categoryId),
+      month: drift.Value(month),
+      year: drift.Value(year),
+      createdAt: drift.Value(createdAt),
     );
   }
 
@@ -1080,7 +1110,7 @@ class Budget extends DataClass implements Insertable<Budget> {
     Map<String, dynamic> json, {
     ValueSerializer? serializer,
   }) {
-    serializer ??= driftRuntimeOptions.defaultSerializer;
+    serializer ??= drift.driftRuntimeOptions.defaultSerializer;
     return Budget(
       id: serializer.fromJson<int>(json['id']),
       amount: serializer.fromJson<double>(json['amount']),
@@ -1092,7 +1122,7 @@ class Budget extends DataClass implements Insertable<Budget> {
   }
   @override
   Map<String, dynamic> toJson({ValueSerializer? serializer}) {
-    serializer ??= driftRuntimeOptions.defaultSerializer;
+    serializer ??= drift.driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
       'id': serializer.toJson<int>(id),
       'amount': serializer.toJson<double>(amount),
@@ -1106,7 +1136,7 @@ class Budget extends DataClass implements Insertable<Budget> {
   Budget copyWith({
     int? id,
     double? amount,
-    Value<int?> categoryId = const Value.absent(),
+    drift.Value<int?> categoryId = const drift.Value.absent(),
     int? month,
     int? year,
     DateTime? createdAt,
@@ -1159,40 +1189,40 @@ class Budget extends DataClass implements Insertable<Budget> {
           other.createdAt == this.createdAt);
 }
 
-class BudgetsCompanion extends UpdateCompanion<Budget> {
-  final Value<int> id;
-  final Value<double> amount;
-  final Value<int?> categoryId;
-  final Value<int> month;
-  final Value<int> year;
-  final Value<DateTime> createdAt;
+class BudgetsCompanion extends drift.UpdateCompanion<Budget> {
+  final drift.Value<int> id;
+  final drift.Value<double> amount;
+  final drift.Value<int?> categoryId;
+  final drift.Value<int> month;
+  final drift.Value<int> year;
+  final drift.Value<DateTime> createdAt;
   const BudgetsCompanion({
-    this.id = const Value.absent(),
-    this.amount = const Value.absent(),
-    this.categoryId = const Value.absent(),
-    this.month = const Value.absent(),
-    this.year = const Value.absent(),
-    this.createdAt = const Value.absent(),
+    this.id = const drift.Value.absent(),
+    this.amount = const drift.Value.absent(),
+    this.categoryId = const drift.Value.absent(),
+    this.month = const drift.Value.absent(),
+    this.year = const drift.Value.absent(),
+    this.createdAt = const drift.Value.absent(),
   });
   BudgetsCompanion.insert({
-    this.id = const Value.absent(),
+    this.id = const drift.Value.absent(),
     required double amount,
-    this.categoryId = const Value.absent(),
+    this.categoryId = const drift.Value.absent(),
     required int month,
     required int year,
-    this.createdAt = const Value.absent(),
-  }) : amount = Value(amount),
-       month = Value(month),
-       year = Value(year);
-  static Insertable<Budget> custom({
-    Expression<int>? id,
-    Expression<double>? amount,
-    Expression<int>? categoryId,
-    Expression<int>? month,
-    Expression<int>? year,
-    Expression<DateTime>? createdAt,
+    this.createdAt = const drift.Value.absent(),
+  }) : amount = drift.Value(amount),
+       month = drift.Value(month),
+       year = drift.Value(year);
+  static drift.Insertable<Budget> custom({
+    drift.Expression<int>? id,
+    drift.Expression<double>? amount,
+    drift.Expression<int>? categoryId,
+    drift.Expression<int>? month,
+    drift.Expression<int>? year,
+    drift.Expression<DateTime>? createdAt,
   }) {
-    return RawValuesInsertable({
+    return drift.RawValuesInsertable({
       if (id != null) 'id': id,
       if (amount != null) 'amount': amount,
       if (categoryId != null) 'category_id': categoryId,
@@ -1203,12 +1233,12 @@ class BudgetsCompanion extends UpdateCompanion<Budget> {
   }
 
   BudgetsCompanion copyWith({
-    Value<int>? id,
-    Value<double>? amount,
-    Value<int?>? categoryId,
-    Value<int>? month,
-    Value<int>? year,
-    Value<DateTime>? createdAt,
+    drift.Value<int>? id,
+    drift.Value<double>? amount,
+    drift.Value<int?>? categoryId,
+    drift.Value<int>? month,
+    drift.Value<int>? year,
+    drift.Value<DateTime>? createdAt,
   }) {
     return BudgetsCompanion(
       id: id ?? this.id,
@@ -1221,25 +1251,25 @@ class BudgetsCompanion extends UpdateCompanion<Budget> {
   }
 
   @override
-  Map<String, Expression> toColumns(bool nullToAbsent) {
-    final map = <String, Expression>{};
+  Map<String, drift.Expression> toColumns(bool nullToAbsent) {
+    final map = <String, drift.Expression>{};
     if (id.present) {
-      map['id'] = Variable<int>(id.value);
+      map['id'] = drift.Variable<int>(id.value);
     }
     if (amount.present) {
-      map['amount'] = Variable<double>(amount.value);
+      map['amount'] = drift.Variable<double>(amount.value);
     }
     if (categoryId.present) {
-      map['category_id'] = Variable<int>(categoryId.value);
+      map['category_id'] = drift.Variable<int>(categoryId.value);
     }
     if (month.present) {
-      map['month'] = Variable<int>(month.value);
+      map['month'] = drift.Variable<int>(month.value);
     }
     if (year.present) {
-      map['year'] = Variable<int>(year.value);
+      map['year'] = drift.Variable<int>(year.value);
     }
     if (createdAt.present) {
-      map['created_at'] = Variable<DateTime>(createdAt.value);
+      map['created_at'] = drift.Variable<DateTime>(createdAt.value);
     }
     return map;
   }
@@ -1258,17 +1288,17 @@ class BudgetsCompanion extends UpdateCompanion<Budget> {
   }
 }
 
-abstract class _$AppDatabase extends GeneratedDatabase {
+abstract class _$AppDatabase extends drift.GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
   late final $CategoriesTable categories = $CategoriesTable(this);
   late final $ExpensesTable expenses = $ExpensesTable(this);
   late final $BudgetsTable budgets = $BudgetsTable(this);
   @override
-  Iterable<TableInfo<Table, Object?>> get allTables =>
-      allSchemaEntities.whereType<TableInfo<Table, Object?>>();
+  Iterable<drift.TableInfo<drift.Table, Object?>> get allTables =>
+      allSchemaEntities.whereType<drift.TableInfo<drift.Table, Object?>>();
   @override
-  List<DatabaseSchemaEntity> get allSchemaEntities => [
+  List<drift.DatabaseSchemaEntity> get allSchemaEntities => [
     categories,
     expenses,
     budgets,
@@ -1277,30 +1307,32 @@ abstract class _$AppDatabase extends GeneratedDatabase {
 
 typedef $$CategoriesTableCreateCompanionBuilder =
     CategoriesCompanion Function({
-      Value<int> id,
+      drift.Value<int> id,
       required String name,
-      Value<int?> color,
-      Value<int?> icon,
-      Value<DateTime> createdAt,
+      drift.Value<int?> color,
+      drift.Value<int?> icon,
+      drift.Value<DateTime> createdAt,
     });
 typedef $$CategoriesTableUpdateCompanionBuilder =
     CategoriesCompanion Function({
-      Value<int> id,
-      Value<String> name,
-      Value<int?> color,
-      Value<int?> icon,
-      Value<DateTime> createdAt,
+      drift.Value<int> id,
+      drift.Value<String> name,
+      drift.Value<int?> color,
+      drift.Value<int?> icon,
+      drift.Value<DateTime> createdAt,
     });
 
 final class $$CategoriesTableReferences
-    extends BaseReferences<_$AppDatabase, $CategoriesTable, Category> {
+    extends drift.BaseReferences<_$AppDatabase, $CategoriesTable, Category> {
   $$CategoriesTableReferences(super.$_db, super.$_table, super.$_typedResult);
 
-  static MultiTypedResultKey<$ExpensesTable, List<Expense>> _expensesRefsTable(
-    _$AppDatabase db,
-  ) => MultiTypedResultKey.fromTable(
+  static drift.MultiTypedResultKey<$ExpensesTable, List<Expense>>
+  _expensesRefsTable(_$AppDatabase db) => drift.MultiTypedResultKey.fromTable(
     db.expenses,
-    aliasName: $_aliasNameGenerator(db.categories.id, db.expenses.categoryId),
+    aliasName: drift.$_aliasNameGenerator(
+      db.categories.id,
+      db.expenses.categoryId,
+    ),
   );
 
   $$ExpensesTableProcessedTableManager get expensesRefs {
@@ -1310,16 +1342,18 @@ final class $$CategoriesTableReferences
     ).filter((f) => f.categoryId.id.sqlEquals($_itemColumn<int>('id')!));
 
     final cache = $_typedResult.readTableOrNull(_expensesRefsTable($_db));
-    return ProcessedTableManager(
+    return drift.ProcessedTableManager(
       manager.$state.copyWith(prefetchedData: cache),
     );
   }
 
-  static MultiTypedResultKey<$BudgetsTable, List<Budget>> _budgetsRefsTable(
-    _$AppDatabase db,
-  ) => MultiTypedResultKey.fromTable(
+  static drift.MultiTypedResultKey<$BudgetsTable, List<Budget>>
+  _budgetsRefsTable(_$AppDatabase db) => drift.MultiTypedResultKey.fromTable(
     db.budgets,
-    aliasName: $_aliasNameGenerator(db.categories.id, db.budgets.categoryId),
+    aliasName: drift.$_aliasNameGenerator(
+      db.categories.id,
+      db.budgets.categoryId,
+    ),
   );
 
   $$BudgetsTableProcessedTableManager get budgetsRefs {
@@ -1329,14 +1363,14 @@ final class $$CategoriesTableReferences
     ).filter((f) => f.categoryId.id.sqlEquals($_itemColumn<int>('id')!));
 
     final cache = $_typedResult.readTableOrNull(_budgetsRefsTable($_db));
-    return ProcessedTableManager(
+    return drift.ProcessedTableManager(
       manager.$state.copyWith(prefetchedData: cache),
     );
   }
 }
 
 class $$CategoriesTableFilterComposer
-    extends Composer<_$AppDatabase, $CategoriesTable> {
+    extends drift.Composer<_$AppDatabase, $CategoriesTable> {
   $$CategoriesTableFilterComposer({
     required super.$db,
     required super.$table,
@@ -1344,33 +1378,33 @@ class $$CategoriesTableFilterComposer
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
-  ColumnFilters<int> get id => $composableBuilder(
+  drift.ColumnFilters<int> get id => $composableBuilder(
     column: $table.id,
-    builder: (column) => ColumnFilters(column),
+    builder: (column) => drift.ColumnFilters(column),
   );
 
-  ColumnFilters<String> get name => $composableBuilder(
+  drift.ColumnFilters<String> get name => $composableBuilder(
     column: $table.name,
-    builder: (column) => ColumnFilters(column),
+    builder: (column) => drift.ColumnFilters(column),
   );
 
-  ColumnFilters<int> get color => $composableBuilder(
+  drift.ColumnFilters<int> get color => $composableBuilder(
     column: $table.color,
-    builder: (column) => ColumnFilters(column),
+    builder: (column) => drift.ColumnFilters(column),
   );
 
-  ColumnFilters<int> get icon => $composableBuilder(
+  drift.ColumnFilters<int> get icon => $composableBuilder(
     column: $table.icon,
-    builder: (column) => ColumnFilters(column),
+    builder: (column) => drift.ColumnFilters(column),
   );
 
-  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+  drift.ColumnFilters<DateTime> get createdAt => $composableBuilder(
     column: $table.createdAt,
-    builder: (column) => ColumnFilters(column),
+    builder: (column) => drift.ColumnFilters(column),
   );
 
-  Expression<bool> expensesRefs(
-    Expression<bool> Function($$ExpensesTableFilterComposer f) f,
+  drift.Expression<bool> expensesRefs(
+    drift.Expression<bool> Function($$ExpensesTableFilterComposer f) f,
   ) {
     final $$ExpensesTableFilterComposer composer = $composerBuilder(
       composer: this,
@@ -1394,8 +1428,8 @@ class $$CategoriesTableFilterComposer
     return f(composer);
   }
 
-  Expression<bool> budgetsRefs(
-    Expression<bool> Function($$BudgetsTableFilterComposer f) f,
+  drift.Expression<bool> budgetsRefs(
+    drift.Expression<bool> Function($$BudgetsTableFilterComposer f) f,
   ) {
     final $$BudgetsTableFilterComposer composer = $composerBuilder(
       composer: this,
@@ -1421,7 +1455,7 @@ class $$CategoriesTableFilterComposer
 }
 
 class $$CategoriesTableOrderingComposer
-    extends Composer<_$AppDatabase, $CategoriesTable> {
+    extends drift.Composer<_$AppDatabase, $CategoriesTable> {
   $$CategoriesTableOrderingComposer({
     required super.$db,
     required super.$table,
@@ -1429,34 +1463,34 @@ class $$CategoriesTableOrderingComposer
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
-  ColumnOrderings<int> get id => $composableBuilder(
+  drift.ColumnOrderings<int> get id => $composableBuilder(
     column: $table.id,
-    builder: (column) => ColumnOrderings(column),
+    builder: (column) => drift.ColumnOrderings(column),
   );
 
-  ColumnOrderings<String> get name => $composableBuilder(
+  drift.ColumnOrderings<String> get name => $composableBuilder(
     column: $table.name,
-    builder: (column) => ColumnOrderings(column),
+    builder: (column) => drift.ColumnOrderings(column),
   );
 
-  ColumnOrderings<int> get color => $composableBuilder(
+  drift.ColumnOrderings<int> get color => $composableBuilder(
     column: $table.color,
-    builder: (column) => ColumnOrderings(column),
+    builder: (column) => drift.ColumnOrderings(column),
   );
 
-  ColumnOrderings<int> get icon => $composableBuilder(
+  drift.ColumnOrderings<int> get icon => $composableBuilder(
     column: $table.icon,
-    builder: (column) => ColumnOrderings(column),
+    builder: (column) => drift.ColumnOrderings(column),
   );
 
-  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+  drift.ColumnOrderings<DateTime> get createdAt => $composableBuilder(
     column: $table.createdAt,
-    builder: (column) => ColumnOrderings(column),
+    builder: (column) => drift.ColumnOrderings(column),
   );
 }
 
 class $$CategoriesTableAnnotationComposer
-    extends Composer<_$AppDatabase, $CategoriesTable> {
+    extends drift.Composer<_$AppDatabase, $CategoriesTable> {
   $$CategoriesTableAnnotationComposer({
     required super.$db,
     required super.$table,
@@ -1464,23 +1498,23 @@ class $$CategoriesTableAnnotationComposer
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
-  GeneratedColumn<int> get id =>
+  drift.GeneratedColumn<int> get id =>
       $composableBuilder(column: $table.id, builder: (column) => column);
 
-  GeneratedColumn<String> get name =>
+  drift.GeneratedColumn<String> get name =>
       $composableBuilder(column: $table.name, builder: (column) => column);
 
-  GeneratedColumn<int> get color =>
+  drift.GeneratedColumn<int> get color =>
       $composableBuilder(column: $table.color, builder: (column) => column);
 
-  GeneratedColumn<int> get icon =>
+  drift.GeneratedColumn<int> get icon =>
       $composableBuilder(column: $table.icon, builder: (column) => column);
 
-  GeneratedColumn<DateTime> get createdAt =>
+  drift.GeneratedColumn<DateTime> get createdAt =>
       $composableBuilder(column: $table.createdAt, builder: (column) => column);
 
-  Expression<T> expensesRefs<T extends Object>(
-    Expression<T> Function($$ExpensesTableAnnotationComposer a) f,
+  drift.Expression<T> expensesRefs<T extends Object>(
+    drift.Expression<T> Function($$ExpensesTableAnnotationComposer a) f,
   ) {
     final $$ExpensesTableAnnotationComposer composer = $composerBuilder(
       composer: this,
@@ -1504,8 +1538,8 @@ class $$CategoriesTableAnnotationComposer
     return f(composer);
   }
 
-  Expression<T> budgetsRefs<T extends Object>(
-    Expression<T> Function($$BudgetsTableAnnotationComposer a) f,
+  drift.Expression<T> budgetsRefs<T extends Object>(
+    drift.Expression<T> Function($$BudgetsTableAnnotationComposer a) f,
   ) {
     final $$BudgetsTableAnnotationComposer composer = $composerBuilder(
       composer: this,
@@ -1532,7 +1566,7 @@ class $$CategoriesTableAnnotationComposer
 
 class $$CategoriesTableTableManager
     extends
-        RootTableManager<
+        drift.RootTableManager<
           _$AppDatabase,
           $CategoriesTable,
           Category,
@@ -1543,11 +1577,11 @@ class $$CategoriesTableTableManager
           $$CategoriesTableUpdateCompanionBuilder,
           (Category, $$CategoriesTableReferences),
           Category,
-          PrefetchHooks Function({bool expensesRefs, bool budgetsRefs})
+          drift.PrefetchHooks Function({bool expensesRefs, bool budgetsRefs})
         > {
   $$CategoriesTableTableManager(_$AppDatabase db, $CategoriesTable table)
     : super(
-        TableManagerState(
+        drift.TableManagerState(
           db: db,
           table: table,
           createFilteringComposer: () =>
@@ -1558,11 +1592,11 @@ class $$CategoriesTableTableManager
               $$CategoriesTableAnnotationComposer($db: db, $table: table),
           updateCompanionCallback:
               ({
-                Value<int> id = const Value.absent(),
-                Value<String> name = const Value.absent(),
-                Value<int?> color = const Value.absent(),
-                Value<int?> icon = const Value.absent(),
-                Value<DateTime> createdAt = const Value.absent(),
+                drift.Value<int> id = const drift.Value.absent(),
+                drift.Value<String> name = const drift.Value.absent(),
+                drift.Value<int?> color = const drift.Value.absent(),
+                drift.Value<int?> icon = const drift.Value.absent(),
+                drift.Value<DateTime> createdAt = const drift.Value.absent(),
               }) => CategoriesCompanion(
                 id: id,
                 name: name,
@@ -1572,11 +1606,11 @@ class $$CategoriesTableTableManager
               ),
           createCompanionCallback:
               ({
-                Value<int> id = const Value.absent(),
+                drift.Value<int> id = const drift.Value.absent(),
                 required String name,
-                Value<int?> color = const Value.absent(),
-                Value<int?> icon = const Value.absent(),
-                Value<DateTime> createdAt = const Value.absent(),
+                drift.Value<int?> color = const drift.Value.absent(),
+                drift.Value<int?> icon = const drift.Value.absent(),
+                drift.Value<DateTime> createdAt = const drift.Value.absent(),
               }) => CategoriesCompanion.insert(
                 id: id,
                 name: name,
@@ -1593,7 +1627,7 @@ class $$CategoriesTableTableManager
               )
               .toList(),
           prefetchHooksCallback: ({expensesRefs = false, budgetsRefs = false}) {
-            return PrefetchHooks(
+            return drift.PrefetchHooks(
               db: db,
               explicitlyWatchedTables: [
                 if (expensesRefs) db.expenses,
@@ -1603,7 +1637,7 @@ class $$CategoriesTableTableManager
               getPrefetchedDataCallback: (items) async {
                 return [
                   if (expensesRefs)
-                    await $_getPrefetchedData<
+                    await drift.$_getPrefetchedData<
                       Category,
                       $CategoriesTable,
                       Expense
@@ -1622,7 +1656,7 @@ class $$CategoriesTableTableManager
                       typedResults: items,
                     ),
                   if (budgetsRefs)
-                    await $_getPrefetchedData<
+                    await drift.$_getPrefetchedData<
                       Category,
                       $CategoriesTable,
                       Budget
@@ -1649,7 +1683,7 @@ class $$CategoriesTableTableManager
 }
 
 typedef $$CategoriesTableProcessedTableManager =
-    ProcessedTableManager<
+    drift.ProcessedTableManager<
       _$AppDatabase,
       $CategoriesTable,
       Category,
@@ -1660,38 +1694,38 @@ typedef $$CategoriesTableProcessedTableManager =
       $$CategoriesTableUpdateCompanionBuilder,
       (Category, $$CategoriesTableReferences),
       Category,
-      PrefetchHooks Function({bool expensesRefs, bool budgetsRefs})
+      drift.PrefetchHooks Function({bool expensesRefs, bool budgetsRefs})
     >;
 typedef $$ExpensesTableCreateCompanionBuilder =
     ExpensesCompanion Function({
-      Value<int> id,
+      drift.Value<int> id,
       required double amount,
-      Value<String?> description,
-      Value<int?> categoryId,
+      drift.Value<String?> description,
+      drift.Value<int?> categoryId,
       required DateTime date,
-      Value<String?> paymentMethod,
-      Value<DateTime> createdAt,
-      Value<bool> isSynced,
+      drift.Value<String?> paymentMethod,
+      drift.Value<DateTime> createdAt,
+      drift.Value<bool> isSynced,
     });
 typedef $$ExpensesTableUpdateCompanionBuilder =
     ExpensesCompanion Function({
-      Value<int> id,
-      Value<double> amount,
-      Value<String?> description,
-      Value<int?> categoryId,
-      Value<DateTime> date,
-      Value<String?> paymentMethod,
-      Value<DateTime> createdAt,
-      Value<bool> isSynced,
+      drift.Value<int> id,
+      drift.Value<double> amount,
+      drift.Value<String?> description,
+      drift.Value<int?> categoryId,
+      drift.Value<DateTime> date,
+      drift.Value<String?> paymentMethod,
+      drift.Value<DateTime> createdAt,
+      drift.Value<bool> isSynced,
     });
 
 final class $$ExpensesTableReferences
-    extends BaseReferences<_$AppDatabase, $ExpensesTable, Expense> {
+    extends drift.BaseReferences<_$AppDatabase, $ExpensesTable, Expense> {
   $$ExpensesTableReferences(super.$_db, super.$_table, super.$_typedResult);
 
   static $CategoriesTable _categoryIdTable(_$AppDatabase db) =>
       db.categories.createAlias(
-        $_aliasNameGenerator(db.expenses.categoryId, db.categories.id),
+        drift.$_aliasNameGenerator(db.expenses.categoryId, db.categories.id),
       );
 
   $$CategoriesTableProcessedTableManager? get categoryId {
@@ -1703,14 +1737,14 @@ final class $$ExpensesTableReferences
     ).filter((f) => f.id.sqlEquals($_column));
     final item = $_typedResult.readTableOrNull(_categoryIdTable($_db));
     if (item == null) return manager;
-    return ProcessedTableManager(
+    return drift.ProcessedTableManager(
       manager.$state.copyWith(prefetchedData: [item]),
     );
   }
 }
 
 class $$ExpensesTableFilterComposer
-    extends Composer<_$AppDatabase, $ExpensesTable> {
+    extends drift.Composer<_$AppDatabase, $ExpensesTable> {
   $$ExpensesTableFilterComposer({
     required super.$db,
     required super.$table,
@@ -1718,39 +1752,39 @@ class $$ExpensesTableFilterComposer
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
-  ColumnFilters<int> get id => $composableBuilder(
+  drift.ColumnFilters<int> get id => $composableBuilder(
     column: $table.id,
-    builder: (column) => ColumnFilters(column),
+    builder: (column) => drift.ColumnFilters(column),
   );
 
-  ColumnFilters<double> get amount => $composableBuilder(
+  drift.ColumnFilters<double> get amount => $composableBuilder(
     column: $table.amount,
-    builder: (column) => ColumnFilters(column),
+    builder: (column) => drift.ColumnFilters(column),
   );
 
-  ColumnFilters<String> get description => $composableBuilder(
+  drift.ColumnFilters<String> get description => $composableBuilder(
     column: $table.description,
-    builder: (column) => ColumnFilters(column),
+    builder: (column) => drift.ColumnFilters(column),
   );
 
-  ColumnFilters<DateTime> get date => $composableBuilder(
+  drift.ColumnFilters<DateTime> get date => $composableBuilder(
     column: $table.date,
-    builder: (column) => ColumnFilters(column),
+    builder: (column) => drift.ColumnFilters(column),
   );
 
-  ColumnFilters<String> get paymentMethod => $composableBuilder(
+  drift.ColumnFilters<String> get paymentMethod => $composableBuilder(
     column: $table.paymentMethod,
-    builder: (column) => ColumnFilters(column),
+    builder: (column) => drift.ColumnFilters(column),
   );
 
-  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+  drift.ColumnFilters<DateTime> get createdAt => $composableBuilder(
     column: $table.createdAt,
-    builder: (column) => ColumnFilters(column),
+    builder: (column) => drift.ColumnFilters(column),
   );
 
-  ColumnFilters<bool> get isSynced => $composableBuilder(
+  drift.ColumnFilters<bool> get isSynced => $composableBuilder(
     column: $table.isSynced,
-    builder: (column) => ColumnFilters(column),
+    builder: (column) => drift.ColumnFilters(column),
   );
 
   $$CategoriesTableFilterComposer get categoryId {
@@ -1778,7 +1812,7 @@ class $$ExpensesTableFilterComposer
 }
 
 class $$ExpensesTableOrderingComposer
-    extends Composer<_$AppDatabase, $ExpensesTable> {
+    extends drift.Composer<_$AppDatabase, $ExpensesTable> {
   $$ExpensesTableOrderingComposer({
     required super.$db,
     required super.$table,
@@ -1786,39 +1820,39 @@ class $$ExpensesTableOrderingComposer
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
-  ColumnOrderings<int> get id => $composableBuilder(
+  drift.ColumnOrderings<int> get id => $composableBuilder(
     column: $table.id,
-    builder: (column) => ColumnOrderings(column),
+    builder: (column) => drift.ColumnOrderings(column),
   );
 
-  ColumnOrderings<double> get amount => $composableBuilder(
+  drift.ColumnOrderings<double> get amount => $composableBuilder(
     column: $table.amount,
-    builder: (column) => ColumnOrderings(column),
+    builder: (column) => drift.ColumnOrderings(column),
   );
 
-  ColumnOrderings<String> get description => $composableBuilder(
+  drift.ColumnOrderings<String> get description => $composableBuilder(
     column: $table.description,
-    builder: (column) => ColumnOrderings(column),
+    builder: (column) => drift.ColumnOrderings(column),
   );
 
-  ColumnOrderings<DateTime> get date => $composableBuilder(
+  drift.ColumnOrderings<DateTime> get date => $composableBuilder(
     column: $table.date,
-    builder: (column) => ColumnOrderings(column),
+    builder: (column) => drift.ColumnOrderings(column),
   );
 
-  ColumnOrderings<String> get paymentMethod => $composableBuilder(
+  drift.ColumnOrderings<String> get paymentMethod => $composableBuilder(
     column: $table.paymentMethod,
-    builder: (column) => ColumnOrderings(column),
+    builder: (column) => drift.ColumnOrderings(column),
   );
 
-  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+  drift.ColumnOrderings<DateTime> get createdAt => $composableBuilder(
     column: $table.createdAt,
-    builder: (column) => ColumnOrderings(column),
+    builder: (column) => drift.ColumnOrderings(column),
   );
 
-  ColumnOrderings<bool> get isSynced => $composableBuilder(
+  drift.ColumnOrderings<bool> get isSynced => $composableBuilder(
     column: $table.isSynced,
-    builder: (column) => ColumnOrderings(column),
+    builder: (column) => drift.ColumnOrderings(column),
   );
 
   $$CategoriesTableOrderingComposer get categoryId {
@@ -1846,7 +1880,7 @@ class $$ExpensesTableOrderingComposer
 }
 
 class $$ExpensesTableAnnotationComposer
-    extends Composer<_$AppDatabase, $ExpensesTable> {
+    extends drift.Composer<_$AppDatabase, $ExpensesTable> {
   $$ExpensesTableAnnotationComposer({
     required super.$db,
     required super.$table,
@@ -1854,29 +1888,29 @@ class $$ExpensesTableAnnotationComposer
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
-  GeneratedColumn<int> get id =>
+  drift.GeneratedColumn<int> get id =>
       $composableBuilder(column: $table.id, builder: (column) => column);
 
-  GeneratedColumn<double> get amount =>
+  drift.GeneratedColumn<double> get amount =>
       $composableBuilder(column: $table.amount, builder: (column) => column);
 
-  GeneratedColumn<String> get description => $composableBuilder(
+  drift.GeneratedColumn<String> get description => $composableBuilder(
     column: $table.description,
     builder: (column) => column,
   );
 
-  GeneratedColumn<DateTime> get date =>
+  drift.GeneratedColumn<DateTime> get date =>
       $composableBuilder(column: $table.date, builder: (column) => column);
 
-  GeneratedColumn<String> get paymentMethod => $composableBuilder(
+  drift.GeneratedColumn<String> get paymentMethod => $composableBuilder(
     column: $table.paymentMethod,
     builder: (column) => column,
   );
 
-  GeneratedColumn<DateTime> get createdAt =>
+  drift.GeneratedColumn<DateTime> get createdAt =>
       $composableBuilder(column: $table.createdAt, builder: (column) => column);
 
-  GeneratedColumn<bool> get isSynced =>
+  drift.GeneratedColumn<bool> get isSynced =>
       $composableBuilder(column: $table.isSynced, builder: (column) => column);
 
   $$CategoriesTableAnnotationComposer get categoryId {
@@ -1905,7 +1939,7 @@ class $$ExpensesTableAnnotationComposer
 
 class $$ExpensesTableTableManager
     extends
-        RootTableManager<
+        drift.RootTableManager<
           _$AppDatabase,
           $ExpensesTable,
           Expense,
@@ -1916,11 +1950,11 @@ class $$ExpensesTableTableManager
           $$ExpensesTableUpdateCompanionBuilder,
           (Expense, $$ExpensesTableReferences),
           Expense,
-          PrefetchHooks Function({bool categoryId})
+          drift.PrefetchHooks Function({bool categoryId})
         > {
   $$ExpensesTableTableManager(_$AppDatabase db, $ExpensesTable table)
     : super(
-        TableManagerState(
+        drift.TableManagerState(
           db: db,
           table: table,
           createFilteringComposer: () =>
@@ -1931,14 +1965,14 @@ class $$ExpensesTableTableManager
               $$ExpensesTableAnnotationComposer($db: db, $table: table),
           updateCompanionCallback:
               ({
-                Value<int> id = const Value.absent(),
-                Value<double> amount = const Value.absent(),
-                Value<String?> description = const Value.absent(),
-                Value<int?> categoryId = const Value.absent(),
-                Value<DateTime> date = const Value.absent(),
-                Value<String?> paymentMethod = const Value.absent(),
-                Value<DateTime> createdAt = const Value.absent(),
-                Value<bool> isSynced = const Value.absent(),
+                drift.Value<int> id = const drift.Value.absent(),
+                drift.Value<double> amount = const drift.Value.absent(),
+                drift.Value<String?> description = const drift.Value.absent(),
+                drift.Value<int?> categoryId = const drift.Value.absent(),
+                drift.Value<DateTime> date = const drift.Value.absent(),
+                drift.Value<String?> paymentMethod = const drift.Value.absent(),
+                drift.Value<DateTime> createdAt = const drift.Value.absent(),
+                drift.Value<bool> isSynced = const drift.Value.absent(),
               }) => ExpensesCompanion(
                 id: id,
                 amount: amount,
@@ -1951,14 +1985,14 @@ class $$ExpensesTableTableManager
               ),
           createCompanionCallback:
               ({
-                Value<int> id = const Value.absent(),
+                drift.Value<int> id = const drift.Value.absent(),
                 required double amount,
-                Value<String?> description = const Value.absent(),
-                Value<int?> categoryId = const Value.absent(),
+                drift.Value<String?> description = const drift.Value.absent(),
+                drift.Value<int?> categoryId = const drift.Value.absent(),
                 required DateTime date,
-                Value<String?> paymentMethod = const Value.absent(),
-                Value<DateTime> createdAt = const Value.absent(),
-                Value<bool> isSynced = const Value.absent(),
+                drift.Value<String?> paymentMethod = const drift.Value.absent(),
+                drift.Value<DateTime> createdAt = const drift.Value.absent(),
+                drift.Value<bool> isSynced = const drift.Value.absent(),
               }) => ExpensesCompanion.insert(
                 id: id,
                 amount: amount,
@@ -1978,12 +2012,12 @@ class $$ExpensesTableTableManager
               )
               .toList(),
           prefetchHooksCallback: ({categoryId = false}) {
-            return PrefetchHooks(
+            return drift.PrefetchHooks(
               db: db,
               explicitlyWatchedTables: [],
               addJoins:
                   <
-                    T extends TableManagerState<
+                    T extends drift.TableManagerState<
                       dynamic,
                       dynamic,
                       dynamic,
@@ -2023,7 +2057,7 @@ class $$ExpensesTableTableManager
 }
 
 typedef $$ExpensesTableProcessedTableManager =
-    ProcessedTableManager<
+    drift.ProcessedTableManager<
       _$AppDatabase,
       $ExpensesTable,
       Expense,
@@ -2034,34 +2068,34 @@ typedef $$ExpensesTableProcessedTableManager =
       $$ExpensesTableUpdateCompanionBuilder,
       (Expense, $$ExpensesTableReferences),
       Expense,
-      PrefetchHooks Function({bool categoryId})
+      drift.PrefetchHooks Function({bool categoryId})
     >;
 typedef $$BudgetsTableCreateCompanionBuilder =
     BudgetsCompanion Function({
-      Value<int> id,
+      drift.Value<int> id,
       required double amount,
-      Value<int?> categoryId,
+      drift.Value<int?> categoryId,
       required int month,
       required int year,
-      Value<DateTime> createdAt,
+      drift.Value<DateTime> createdAt,
     });
 typedef $$BudgetsTableUpdateCompanionBuilder =
     BudgetsCompanion Function({
-      Value<int> id,
-      Value<double> amount,
-      Value<int?> categoryId,
-      Value<int> month,
-      Value<int> year,
-      Value<DateTime> createdAt,
+      drift.Value<int> id,
+      drift.Value<double> amount,
+      drift.Value<int?> categoryId,
+      drift.Value<int> month,
+      drift.Value<int> year,
+      drift.Value<DateTime> createdAt,
     });
 
 final class $$BudgetsTableReferences
-    extends BaseReferences<_$AppDatabase, $BudgetsTable, Budget> {
+    extends drift.BaseReferences<_$AppDatabase, $BudgetsTable, Budget> {
   $$BudgetsTableReferences(super.$_db, super.$_table, super.$_typedResult);
 
   static $CategoriesTable _categoryIdTable(_$AppDatabase db) =>
       db.categories.createAlias(
-        $_aliasNameGenerator(db.budgets.categoryId, db.categories.id),
+        drift.$_aliasNameGenerator(db.budgets.categoryId, db.categories.id),
       );
 
   $$CategoriesTableProcessedTableManager? get categoryId {
@@ -2073,14 +2107,14 @@ final class $$BudgetsTableReferences
     ).filter((f) => f.id.sqlEquals($_column));
     final item = $_typedResult.readTableOrNull(_categoryIdTable($_db));
     if (item == null) return manager;
-    return ProcessedTableManager(
+    return drift.ProcessedTableManager(
       manager.$state.copyWith(prefetchedData: [item]),
     );
   }
 }
 
 class $$BudgetsTableFilterComposer
-    extends Composer<_$AppDatabase, $BudgetsTable> {
+    extends drift.Composer<_$AppDatabase, $BudgetsTable> {
   $$BudgetsTableFilterComposer({
     required super.$db,
     required super.$table,
@@ -2088,29 +2122,29 @@ class $$BudgetsTableFilterComposer
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
-  ColumnFilters<int> get id => $composableBuilder(
+  drift.ColumnFilters<int> get id => $composableBuilder(
     column: $table.id,
-    builder: (column) => ColumnFilters(column),
+    builder: (column) => drift.ColumnFilters(column),
   );
 
-  ColumnFilters<double> get amount => $composableBuilder(
+  drift.ColumnFilters<double> get amount => $composableBuilder(
     column: $table.amount,
-    builder: (column) => ColumnFilters(column),
+    builder: (column) => drift.ColumnFilters(column),
   );
 
-  ColumnFilters<int> get month => $composableBuilder(
+  drift.ColumnFilters<int> get month => $composableBuilder(
     column: $table.month,
-    builder: (column) => ColumnFilters(column),
+    builder: (column) => drift.ColumnFilters(column),
   );
 
-  ColumnFilters<int> get year => $composableBuilder(
+  drift.ColumnFilters<int> get year => $composableBuilder(
     column: $table.year,
-    builder: (column) => ColumnFilters(column),
+    builder: (column) => drift.ColumnFilters(column),
   );
 
-  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+  drift.ColumnFilters<DateTime> get createdAt => $composableBuilder(
     column: $table.createdAt,
-    builder: (column) => ColumnFilters(column),
+    builder: (column) => drift.ColumnFilters(column),
   );
 
   $$CategoriesTableFilterComposer get categoryId {
@@ -2138,7 +2172,7 @@ class $$BudgetsTableFilterComposer
 }
 
 class $$BudgetsTableOrderingComposer
-    extends Composer<_$AppDatabase, $BudgetsTable> {
+    extends drift.Composer<_$AppDatabase, $BudgetsTable> {
   $$BudgetsTableOrderingComposer({
     required super.$db,
     required super.$table,
@@ -2146,29 +2180,29 @@ class $$BudgetsTableOrderingComposer
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
-  ColumnOrderings<int> get id => $composableBuilder(
+  drift.ColumnOrderings<int> get id => $composableBuilder(
     column: $table.id,
-    builder: (column) => ColumnOrderings(column),
+    builder: (column) => drift.ColumnOrderings(column),
   );
 
-  ColumnOrderings<double> get amount => $composableBuilder(
+  drift.ColumnOrderings<double> get amount => $composableBuilder(
     column: $table.amount,
-    builder: (column) => ColumnOrderings(column),
+    builder: (column) => drift.ColumnOrderings(column),
   );
 
-  ColumnOrderings<int> get month => $composableBuilder(
+  drift.ColumnOrderings<int> get month => $composableBuilder(
     column: $table.month,
-    builder: (column) => ColumnOrderings(column),
+    builder: (column) => drift.ColumnOrderings(column),
   );
 
-  ColumnOrderings<int> get year => $composableBuilder(
+  drift.ColumnOrderings<int> get year => $composableBuilder(
     column: $table.year,
-    builder: (column) => ColumnOrderings(column),
+    builder: (column) => drift.ColumnOrderings(column),
   );
 
-  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+  drift.ColumnOrderings<DateTime> get createdAt => $composableBuilder(
     column: $table.createdAt,
-    builder: (column) => ColumnOrderings(column),
+    builder: (column) => drift.ColumnOrderings(column),
   );
 
   $$CategoriesTableOrderingComposer get categoryId {
@@ -2196,7 +2230,7 @@ class $$BudgetsTableOrderingComposer
 }
 
 class $$BudgetsTableAnnotationComposer
-    extends Composer<_$AppDatabase, $BudgetsTable> {
+    extends drift.Composer<_$AppDatabase, $BudgetsTable> {
   $$BudgetsTableAnnotationComposer({
     required super.$db,
     required super.$table,
@@ -2204,19 +2238,19 @@ class $$BudgetsTableAnnotationComposer
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
-  GeneratedColumn<int> get id =>
+  drift.GeneratedColumn<int> get id =>
       $composableBuilder(column: $table.id, builder: (column) => column);
 
-  GeneratedColumn<double> get amount =>
+  drift.GeneratedColumn<double> get amount =>
       $composableBuilder(column: $table.amount, builder: (column) => column);
 
-  GeneratedColumn<int> get month =>
+  drift.GeneratedColumn<int> get month =>
       $composableBuilder(column: $table.month, builder: (column) => column);
 
-  GeneratedColumn<int> get year =>
+  drift.GeneratedColumn<int> get year =>
       $composableBuilder(column: $table.year, builder: (column) => column);
 
-  GeneratedColumn<DateTime> get createdAt =>
+  drift.GeneratedColumn<DateTime> get createdAt =>
       $composableBuilder(column: $table.createdAt, builder: (column) => column);
 
   $$CategoriesTableAnnotationComposer get categoryId {
@@ -2245,7 +2279,7 @@ class $$BudgetsTableAnnotationComposer
 
 class $$BudgetsTableTableManager
     extends
-        RootTableManager<
+        drift.RootTableManager<
           _$AppDatabase,
           $BudgetsTable,
           Budget,
@@ -2256,11 +2290,11 @@ class $$BudgetsTableTableManager
           $$BudgetsTableUpdateCompanionBuilder,
           (Budget, $$BudgetsTableReferences),
           Budget,
-          PrefetchHooks Function({bool categoryId})
+          drift.PrefetchHooks Function({bool categoryId})
         > {
   $$BudgetsTableTableManager(_$AppDatabase db, $BudgetsTable table)
     : super(
-        TableManagerState(
+        drift.TableManagerState(
           db: db,
           table: table,
           createFilteringComposer: () =>
@@ -2271,12 +2305,12 @@ class $$BudgetsTableTableManager
               $$BudgetsTableAnnotationComposer($db: db, $table: table),
           updateCompanionCallback:
               ({
-                Value<int> id = const Value.absent(),
-                Value<double> amount = const Value.absent(),
-                Value<int?> categoryId = const Value.absent(),
-                Value<int> month = const Value.absent(),
-                Value<int> year = const Value.absent(),
-                Value<DateTime> createdAt = const Value.absent(),
+                drift.Value<int> id = const drift.Value.absent(),
+                drift.Value<double> amount = const drift.Value.absent(),
+                drift.Value<int?> categoryId = const drift.Value.absent(),
+                drift.Value<int> month = const drift.Value.absent(),
+                drift.Value<int> year = const drift.Value.absent(),
+                drift.Value<DateTime> createdAt = const drift.Value.absent(),
               }) => BudgetsCompanion(
                 id: id,
                 amount: amount,
@@ -2287,12 +2321,12 @@ class $$BudgetsTableTableManager
               ),
           createCompanionCallback:
               ({
-                Value<int> id = const Value.absent(),
+                drift.Value<int> id = const drift.Value.absent(),
                 required double amount,
-                Value<int?> categoryId = const Value.absent(),
+                drift.Value<int?> categoryId = const drift.Value.absent(),
                 required int month,
                 required int year,
-                Value<DateTime> createdAt = const Value.absent(),
+                drift.Value<DateTime> createdAt = const drift.Value.absent(),
               }) => BudgetsCompanion.insert(
                 id: id,
                 amount: amount,
@@ -2310,12 +2344,12 @@ class $$BudgetsTableTableManager
               )
               .toList(),
           prefetchHooksCallback: ({categoryId = false}) {
-            return PrefetchHooks(
+            return drift.PrefetchHooks(
               db: db,
               explicitlyWatchedTables: [],
               addJoins:
                   <
-                    T extends TableManagerState<
+                    T extends drift.TableManagerState<
                       dynamic,
                       dynamic,
                       dynamic,
@@ -2355,7 +2389,7 @@ class $$BudgetsTableTableManager
 }
 
 typedef $$BudgetsTableProcessedTableManager =
-    ProcessedTableManager<
+    drift.ProcessedTableManager<
       _$AppDatabase,
       $BudgetsTable,
       Budget,
@@ -2366,7 +2400,7 @@ typedef $$BudgetsTableProcessedTableManager =
       $$BudgetsTableUpdateCompanionBuilder,
       (Budget, $$BudgetsTableReferences),
       Budget,
-      PrefetchHooks Function({bool categoryId})
+      drift.PrefetchHooks Function({bool categoryId})
     >;
 
 class $AppDatabaseManager {
