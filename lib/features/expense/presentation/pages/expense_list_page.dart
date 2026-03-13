@@ -10,22 +10,11 @@ class ExpenseListPage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // On écoute le flux des dépenses
     final expensesAsync = ref.watch(expenseListProvider);
     final currencyFormat = NumberFormat.currency(locale: 'fr_FR', symbol: '€');
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Mes Dépenses'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.settings),
-            onPressed: () {
-              // Placeholder pour plus tard
-            },
-          ),
-        ],
-      ),
+      appBar: AppBar(title: const Text('Mes Dépenses')),
       body: expensesAsync.when(
         data: (expenses) {
           if (expenses.isEmpty) {
@@ -39,35 +28,75 @@ class ExpenseListPage extends ConsumerWidget {
           return ListView.builder(
             itemCount: expenses.length,
             itemBuilder: (context, index) {
-              final item = expenses[index]; // C'est maintenant un ExpenseWithCategory
+              final item = expenses[index];
               final expense = item.expense;
               final category = item.category;
 
-              return ListTile(
-                leading: CircleAvatar(
-                  backgroundColor: category != null ? Color(category.color ?? 0xFF9E9E9E) : Colors.grey,
-                  child: Icon(
-                    category != null
-                        ? IconData(category.icon ?? 0xe3a7, fontFamily: 'MaterialIcons')
-                        : Icons.attach_money,
-                    color: Colors.white,
-                  ),
+              // 1. WIDGET DISMISSIBLE (Pour supprimer au swipe)
+              return Dismissible(
+                key: Key(expense.id.toString()), // Clé unique obligatoire
+                direction: DismissDirection.endToStart, // Swipe de droite à gauche
+                background: Container(
+                  color: Colors.red,
+                  alignment: Alignment.centerRight,
+                  padding: const EdgeInsets.only(right: 20),
+                  child: const Icon(Icons.delete, color: Colors.white),
                 ),
-                title: Text(expense.description ?? 'Dépense'),
-                subtitle: Text(
-                  '${category?.name ?? "Non classé"} • ${DateFormat('dd/MM/yyyy').format(expense.date)}',
-                ),
-                trailing: Text(
-                  currencyFormat.format(expense.amount),
-                  style: const TextStyle(
-                    color: Colors.red, // On verra plus tard pour la couleur dynamique (Revenus vs Dépenses)
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                onLongPress: () {
-                  // Suppression (optionnelle pour l'instant)
-                  // ref.read(expenseRepositoryProvider).deleteExpense(expense);
+                confirmDismiss: (direction) async {
+                  // Confirmation avant suppression
+                  return await showDialog(
+                    context: context,
+                    builder: (BuildContext context) {
+                      return AlertDialog(
+                        title: const Text("Confirmer"),
+                        content: const Text("Voulez-vous supprimer cette dépense ?"),
+                        actions: [
+                          TextButton(
+                            onPressed: () => Navigator.of(context).pop(false),
+                            child: const Text("Annuler"),
+                          ),
+                          TextButton(
+                            onPressed: () => Navigator.of(context).pop(true),
+                            child: const Text("Supprimer", style: TextStyle(color: Colors.red)),
+                          ),
+                        ],
+                      );
+                    },
+                  );
                 },
+                onDismissed: (direction) {
+                  ref.read(expenseRepositoryProvider).deleteExpense(expense);
+                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Dépense supprimée")));
+                },
+
+                // 2. LISTILE (Pour affichage et modification)
+                child: ListTile(
+                  onTap: () {
+                    // Clic pour modifier
+                    showModalBottomSheet(
+                      context: context,
+                      isScrollControlled: true,
+                      builder: (context) => AddExpenseSheet(expenseToEdit: expense),
+                    );
+                  },
+                  leading: CircleAvatar(
+                    backgroundColor: category != null ? Color(category.color ?? 0xFF9E9E9E) : Colors.grey,
+                    child: Icon(
+                      category != null
+                          ? IconData(category.icon ?? 0xe3a7, fontFamily: 'MaterialIcons')
+                          : Icons.attach_money,
+                      color: Colors.white,
+                    ),
+                  ),
+                  title: Text(expense.description ?? 'Dépense'),
+                  subtitle: Text(
+                    '${category?.name ?? "Non classé"} • ${DateFormat('dd/MM/yyyy').format(expense.date)}',
+                  ),
+                  trailing: Text(
+                    currencyFormat.format(expense.amount),
+                    style: const TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
+                  ),
+                ),
               );
             },
           );
@@ -79,7 +108,7 @@ class ExpenseListPage extends ConsumerWidget {
         onPressed: () {
           showModalBottomSheet(
             context: context,
-            isScrollControlled: true, // Permet au formulaire de prendre la hauteur nécessaire
+            isScrollControlled: true,
             builder: (context) => const AddExpenseSheet(),
           );
         },

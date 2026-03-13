@@ -22,6 +22,11 @@ class ExpenseRepositoryImpl implements ExpenseRepository {
     return _db.insertExpense(expense);
   }
 
+ @override
+  Future<void> updateExpense(Expense expense) {
+    return _db.updateExpense(expense);
+  }
+
   @override
   Future<void> deleteExpense(Expense expense) {
     return _db.deleteExpense(expense);

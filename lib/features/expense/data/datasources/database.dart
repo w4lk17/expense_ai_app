@@ -87,6 +87,10 @@ class AppDatabase extends _$AppDatabase {
 
   // --- EXPENSES DAO ---
   Future<int> insertExpense(ExpensesCompanion expense) => into(expenses).insert(expense);
+  Future<void> updateExpense(Expense expense) async {
+    await update(expenses).replace(expense);
+  }
+
   Future<int> deleteExpense(Expense expense) => delete(expenses).delete(expense);
   Stream<List<ExpenseWithCategory>> watchAllExpensesWithCategory() {
     final query = select(expenses).join([leftOuterJoin(categories, categories.id.equalsExp(expenses.categoryId))]);
