@@ -1,10 +1,12 @@
-import 'package:expense_ai_app/core/themes/app_theme.dart';
-import 'package:expense_ai_app/features/expense/presentation/pages/home_shell.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'core/constants/supabase_constants.dart';
+import 'core/themes/app_theme.dart';
+import 'features/auth/presentation/pages/login_page.dart';
+import 'features/auth/presentation/providers/auth_provider.dart';
+import 'features/expense/presentation/pages/home_shell.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -28,7 +30,20 @@ class MyApp extends ConsumerWidget {
       title: 'Expense AI',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme,
-      home: const HomeShell(),
+      // On écoute l'état de l'authentification
+      home: ref.watch(authStateProvider).when(
+        data: (authState) {
+          final session = authState.session;
+          // Si session existe -> App, sinon -> Login
+          if (session != null) {
+            return const HomeShell();
+          } else {
+            return const LoginPage();
+          }
+        },
+        loading: () => const Scaffold(body: Center(child: CircularProgressIndicator())),
+        error: (e, s) => Scaffold(body: Center(child: Text('Erreur Auth: $e'))),
+      ),
     );
   }
 }
