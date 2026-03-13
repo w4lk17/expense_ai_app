@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'core/constants/supabase_constants.dart';
+import 'features/expense/presentation/pages/expense_list_page.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -27,7 +28,7 @@ class MyApp extends ConsumerWidget {
       title: 'Expense AI',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme,
-      home: const Scaffold(body: Center(child: Text("Setup Terminé - Prêt pour la Phase 1.2"))),
+      home: const ExpenseListPage(),
     );
   }
 }
