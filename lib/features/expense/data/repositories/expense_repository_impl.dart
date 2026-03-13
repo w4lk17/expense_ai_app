@@ -8,8 +8,13 @@ class ExpenseRepositoryImpl implements ExpenseRepository {
   ExpenseRepositoryImpl(this._db);
 
   @override
-  Stream<List<Expense>> watchAllExpenses() {
-    return _db.watchAllExpenses();
+  Stream<List<ExpenseWithCategory>> watchAllExpensesWithCategory() {
+    return _db.watchAllExpensesWithCategory();
+  }
+
+  @override
+  Future<List<Category>> getAllCategories() {
+    return _db.getAllCategories();
   }
 
   @override

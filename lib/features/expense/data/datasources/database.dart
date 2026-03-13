@@ -36,6 +36,14 @@ class Budgets extends Table {
   DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
 }
 
+// Cette classe contient une dépense ET sa catégorie associée
+class ExpenseWithCategory {
+  final Expense expense;
+  final Category? category;
+
+  ExpenseWithCategory(this.expense, this.category);
+}
+
 @DriftDatabase(tables: [Categories, Expenses, Budgets])
 class AppDatabase extends _$AppDatabase {
   // On accepte un executor externe pour les tests
@@ -80,8 +88,19 @@ class AppDatabase extends _$AppDatabase {
   // --- EXPENSES DAO ---
   Future<int> insertExpense(ExpensesCompanion expense) => into(expenses).insert(expense);
   Future<int> deleteExpense(Expense expense) => delete(expenses).delete(expense);
-  Stream<List<Expense>> watchAllExpenses() {
-    return (select(expenses)..orderBy([(t) => OrderingTerm.desc(t.date)])).watch();
+  Stream<List<ExpenseWithCategory>> watchAllExpensesWithCategory() {
+    final query = select(expenses).join([leftOuterJoin(categories, categories.id.equalsExp(expenses.categoryId))]);
+
+    // On trie par date décroissante
+    query.orderBy([OrderingTerm.desc(expenses.date)]);
+
+    return query.watch().map((rows) {
+      return rows.map((row) {
+        final expense = row.readTable(expenses);
+        final category = row.readTableOrNull(categories); // Peut être null
+        return ExpenseWithCategory(expense, category);
+      }).toList();
+    });
   }
 
   // --- BUDGETS DAO ---

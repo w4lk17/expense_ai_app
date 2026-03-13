@@ -16,6 +16,7 @@ class _AddExpenseSheetState extends ConsumerState<AddExpenseSheet> {
   final _formKey = GlobalKey<FormState>();
   final _amountController = TextEditingController();
   final _descController = TextEditingController();
+  Category? _selectedCategory;
   DateTime _selectedDate = DateTime.now();
 
   Future<void> _saveExpense() async {
@@ -28,8 +29,7 @@ class _AddExpenseSheetState extends ConsumerState<AddExpenseSheet> {
         amount: drift.Value(amount).value,
         description: drift.Value(_descController.text),
         date: _selectedDate,
-        // Pour l'instant, pas de catégorie sélectionnée (null)
-        categoryId: const drift.Value.absent(),
+        categoryId: drift.Value(_selectedCategory?.id), // Gérer le cas où aucune catégorie n'est sélectionnée
       );
 
       // Appel au repository via le provider
@@ -48,6 +48,8 @@ class _AddExpenseSheetState extends ConsumerState<AddExpenseSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final categoriesAsync = ref.watch(categoryListProvider);
+
     return Padding(
       padding: EdgeInsets.only(
         bottom: MediaQuery.of(context).viewInsets.bottom, // Gestion du clavier
@@ -73,6 +75,26 @@ class _AddExpenseSheetState extends ConsumerState<AddExpenseSheet> {
             TextFormField(
               controller: _descController,
               decoration: const InputDecoration(labelText: 'Description', prefixIcon: Icon(Icons.description)),
+            ),
+            const SizedBox(height: 12),
+            // Dropdown pour Catégorie
+            categoriesAsync.when(
+              data: (categories) {
+                return DropdownButtonFormField<Category>(
+                  initialValue: _selectedCategory,
+                  decoration: const InputDecoration(labelText: 'Catégorie', prefixIcon: Icon(Icons.category)),
+                  items: categories.map((cat) {
+                    return DropdownMenuItem(value: cat, child: Text(cat.name));
+                  }).toList(),
+                  onChanged: (value) {
+                    setState(() {
+                      _selectedCategory = value;
+                    });
+                  },
+                );
+              },
+              loading: () => const Center(child: CircularProgressIndicator()),
+              error: (e, s) => Text('Erreur catégories: $e'),
             ),
             const SizedBox(height: 12),
             // Sélection de date simple

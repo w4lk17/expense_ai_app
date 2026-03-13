@@ -39,11 +39,24 @@ class ExpenseListPage extends ConsumerWidget {
           return ListView.builder(
             itemCount: expenses.length,
             itemBuilder: (context, index) {
-              final expense = expenses[index];
+              final item = expenses[index]; // C'est maintenant un ExpenseWithCategory
+              final expense = item.expense;
+              final category = item.category;
+
               return ListTile(
-                leading: const CircleAvatar(child: Icon(Icons.attach_money)),
+                leading: CircleAvatar(
+                  backgroundColor: category != null ? Color(category.color ?? 0xFF9E9E9E) : Colors.grey,
+                  child: Icon(
+                    category != null
+                        ? IconData(category.icon ?? 0xe3a7, fontFamily: 'MaterialIcons')
+                        : Icons.attach_money,
+                    color: Colors.white,
+                  ),
+                ),
                 title: Text(expense.description ?? 'Dépense'),
-                subtitle: Text(DateFormat('dd/MM/yyyy').format(expense.date)),
+                subtitle: Text(
+                  '${category?.name ?? "Non classé"} • ${DateFormat('dd/MM/yyyy').format(expense.date)}',
+                ),
                 trailing: Text(
                   currencyFormat.format(expense.amount),
                   style: const TextStyle(
