@@ -23,3 +23,41 @@ final expenseListProvider = StreamProvider<List<ExpenseWithCategory>>((ref) {
   final repository = ref.watch(expenseRepositoryProvider);
   return repository.watchAllExpensesWithCategory();
 });
+
+// Ce provider calcule les totaux par catégorie
+final expensesByCategoryProvider = Provider<Map<Category, double>>((ref) {
+  final expensesAsync = ref.watch(expenseListProvider);
+
+  // Si pas de données, retourne une map vide
+  return expensesAsync.maybeWhen(
+    data: (items) {
+      final map = <Category, double>{};
+      for (var item in items) {
+        if (item.category != null) {
+          // On additionne les montants par catégorie
+          map.update(item.category!, (value) => value + item.expense.amount, ifAbsent: () => item.expense.amount);
+        }
+      }
+      return map;
+    },
+    orElse: () => {},
+  );
+});
+
+// Provider pour le total du mois actuel
+final totalMonthProvider = Provider<double>((ref) {
+  final expensesAsync = ref.watch(expenseListProvider);
+
+  return expensesAsync.maybeWhen(
+    data: (items) {
+      final now = DateTime.now();
+      final currentMonth = now.month;
+      final currentYear = now.year;
+
+      return items
+          .where((item) => item.expense.date.month == currentMonth && item.expense.date.year == currentYear)
+          .fold(0.0, (sum, item) => sum + item.expense.amount);
+    },
+    orElse: () => 0.0,
+  );
+});

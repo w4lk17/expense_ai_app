@@ -1,10 +1,10 @@
 import 'package:expense_ai_app/core/themes/app_theme.dart';
+import 'package:expense_ai_app/features/expense/presentation/pages/home_shell.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'core/constants/supabase_constants.dart';
-import 'features/expense/presentation/pages/expense_list_page.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -28,7 +28,7 @@ class MyApp extends ConsumerWidget {
       title: 'Expense AI',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme,
-      home: const ExpenseListPage(),
+      home: const HomeShell(),
     );
   }
 }
