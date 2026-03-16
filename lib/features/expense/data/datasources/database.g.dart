@@ -440,6 +440,44 @@ class $ExpensesTable extends Expenses
         type: DriftSqlType.string,
         requiredDuringInsert: false,
       );
+  static const drift.VerificationMeta _isRecurringMeta =
+      const drift.VerificationMeta('isRecurring');
+  @override
+  late final drift.GeneratedColumn<bool> isRecurring =
+      drift.GeneratedColumn<bool>(
+        'is_recurring',
+        aliasedName,
+        false,
+        type: DriftSqlType.bool,
+        requiredDuringInsert: false,
+        defaultConstraints: GeneratedColumn.constraintIsAlways(
+          'CHECK ("is_recurring" IN (0, 1))',
+        ),
+        defaultValue: const drift.Constant(false),
+      );
+  static const drift.VerificationMeta _recurrenceIntervalMeta =
+      const drift.VerificationMeta('recurrenceInterval');
+  @override
+  late final drift.GeneratedColumn<String> recurrenceInterval =
+      drift.GeneratedColumn<String>(
+        'recurrence_interval',
+        aliasedName,
+        true,
+        type: DriftSqlType.string,
+        requiredDuringInsert: false,
+        defaultValue: const drift.Constant('monthly'),
+      );
+  static const drift.VerificationMeta _nextRecurrenceDateMeta =
+      const drift.VerificationMeta('nextRecurrenceDate');
+  @override
+  late final drift.GeneratedColumn<DateTime> nextRecurrenceDate =
+      drift.GeneratedColumn<DateTime>(
+        'next_recurrence_date',
+        aliasedName,
+        true,
+        type: DriftSqlType.dateTime,
+        requiredDuringInsert: false,
+      );
   static const drift.VerificationMeta _createdAtMeta =
       const drift.VerificationMeta('createdAt');
   @override
@@ -474,6 +512,9 @@ class $ExpensesTable extends Expenses
     categoryId,
     date,
     paymentMethod,
+    isRecurring,
+    recurrenceInterval,
+    nextRecurrenceDate,
     createdAt,
     isSynced,
   ];
@@ -532,6 +573,33 @@ class $ExpensesTable extends Expenses
         ),
       );
     }
+    if (data.containsKey('is_recurring')) {
+      context.handle(
+        _isRecurringMeta,
+        isRecurring.isAcceptableOrUnknown(
+          data['is_recurring']!,
+          _isRecurringMeta,
+        ),
+      );
+    }
+    if (data.containsKey('recurrence_interval')) {
+      context.handle(
+        _recurrenceIntervalMeta,
+        recurrenceInterval.isAcceptableOrUnknown(
+          data['recurrence_interval']!,
+          _recurrenceIntervalMeta,
+        ),
+      );
+    }
+    if (data.containsKey('next_recurrence_date')) {
+      context.handle(
+        _nextRecurrenceDateMeta,
+        nextRecurrenceDate.isAcceptableOrUnknown(
+          data['next_recurrence_date']!,
+          _nextRecurrenceDateMeta,
+        ),
+      );
+    }
     if (data.containsKey('created_at')) {
       context.handle(
         _createdAtMeta,
@@ -577,6 +645,18 @@ class $ExpensesTable extends Expenses
         DriftSqlType.string,
         data['${effectivePrefix}payment_method'],
       ),
+      isRecurring: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}is_recurring'],
+      )!,
+      recurrenceInterval: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}recurrence_interval'],
+      ),
+      nextRecurrenceDate: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}next_recurrence_date'],
+      ),
       createdAt: attachedDatabase.typeMapping.read(
         DriftSqlType.dateTime,
         data['${effectivePrefix}created_at'],
@@ -601,6 +681,9 @@ class Expense extends drift.DataClass implements drift.Insertable<Expense> {
   final int? categoryId;
   final DateTime date;
   final String? paymentMethod;
+  final bool isRecurring;
+  final String? recurrenceInterval;
+  final DateTime? nextRecurrenceDate;
   final DateTime createdAt;
   final bool isSynced;
   const Expense({
@@ -610,6 +693,9 @@ class Expense extends drift.DataClass implements drift.Insertable<Expense> {
     this.categoryId,
     required this.date,
     this.paymentMethod,
+    required this.isRecurring,
+    this.recurrenceInterval,
+    this.nextRecurrenceDate,
     required this.createdAt,
     required this.isSynced,
   });
@@ -627,6 +713,15 @@ class Expense extends drift.DataClass implements drift.Insertable<Expense> {
     map['date'] = drift.Variable<DateTime>(date);
     if (!nullToAbsent || paymentMethod != null) {
       map['payment_method'] = drift.Variable<String>(paymentMethod);
+    }
+    map['is_recurring'] = drift.Variable<bool>(isRecurring);
+    if (!nullToAbsent || recurrenceInterval != null) {
+      map['recurrence_interval'] = drift.Variable<String>(recurrenceInterval);
+    }
+    if (!nullToAbsent || nextRecurrenceDate != null) {
+      map['next_recurrence_date'] = drift.Variable<DateTime>(
+        nextRecurrenceDate,
+      );
     }
     map['created_at'] = drift.Variable<DateTime>(createdAt);
     map['is_synced'] = drift.Variable<bool>(isSynced);
@@ -647,6 +742,13 @@ class Expense extends drift.DataClass implements drift.Insertable<Expense> {
       paymentMethod: paymentMethod == null && nullToAbsent
           ? const drift.Value.absent()
           : drift.Value(paymentMethod),
+      isRecurring: drift.Value(isRecurring),
+      recurrenceInterval: recurrenceInterval == null && nullToAbsent
+          ? const drift.Value.absent()
+          : drift.Value(recurrenceInterval),
+      nextRecurrenceDate: nextRecurrenceDate == null && nullToAbsent
+          ? const drift.Value.absent()
+          : drift.Value(nextRecurrenceDate),
       createdAt: drift.Value(createdAt),
       isSynced: drift.Value(isSynced),
     );
@@ -664,6 +766,13 @@ class Expense extends drift.DataClass implements drift.Insertable<Expense> {
       categoryId: serializer.fromJson<int?>(json['categoryId']),
       date: serializer.fromJson<DateTime>(json['date']),
       paymentMethod: serializer.fromJson<String?>(json['paymentMethod']),
+      isRecurring: serializer.fromJson<bool>(json['isRecurring']),
+      recurrenceInterval: serializer.fromJson<String?>(
+        json['recurrenceInterval'],
+      ),
+      nextRecurrenceDate: serializer.fromJson<DateTime?>(
+        json['nextRecurrenceDate'],
+      ),
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
       isSynced: serializer.fromJson<bool>(json['isSynced']),
     );
@@ -678,6 +787,9 @@ class Expense extends drift.DataClass implements drift.Insertable<Expense> {
       'categoryId': serializer.toJson<int?>(categoryId),
       'date': serializer.toJson<DateTime>(date),
       'paymentMethod': serializer.toJson<String?>(paymentMethod),
+      'isRecurring': serializer.toJson<bool>(isRecurring),
+      'recurrenceInterval': serializer.toJson<String?>(recurrenceInterval),
+      'nextRecurrenceDate': serializer.toJson<DateTime?>(nextRecurrenceDate),
       'createdAt': serializer.toJson<DateTime>(createdAt),
       'isSynced': serializer.toJson<bool>(isSynced),
     };
@@ -690,6 +802,9 @@ class Expense extends drift.DataClass implements drift.Insertable<Expense> {
     drift.Value<int?> categoryId = const drift.Value.absent(),
     DateTime? date,
     drift.Value<String?> paymentMethod = const drift.Value.absent(),
+    bool? isRecurring,
+    drift.Value<String?> recurrenceInterval = const drift.Value.absent(),
+    drift.Value<DateTime?> nextRecurrenceDate = const drift.Value.absent(),
     DateTime? createdAt,
     bool? isSynced,
   }) => Expense(
@@ -701,6 +816,13 @@ class Expense extends drift.DataClass implements drift.Insertable<Expense> {
     paymentMethod: paymentMethod.present
         ? paymentMethod.value
         : this.paymentMethod,
+    isRecurring: isRecurring ?? this.isRecurring,
+    recurrenceInterval: recurrenceInterval.present
+        ? recurrenceInterval.value
+        : this.recurrenceInterval,
+    nextRecurrenceDate: nextRecurrenceDate.present
+        ? nextRecurrenceDate.value
+        : this.nextRecurrenceDate,
     createdAt: createdAt ?? this.createdAt,
     isSynced: isSynced ?? this.isSynced,
   );
@@ -718,6 +840,15 @@ class Expense extends drift.DataClass implements drift.Insertable<Expense> {
       paymentMethod: data.paymentMethod.present
           ? data.paymentMethod.value
           : this.paymentMethod,
+      isRecurring: data.isRecurring.present
+          ? data.isRecurring.value
+          : this.isRecurring,
+      recurrenceInterval: data.recurrenceInterval.present
+          ? data.recurrenceInterval.value
+          : this.recurrenceInterval,
+      nextRecurrenceDate: data.nextRecurrenceDate.present
+          ? data.nextRecurrenceDate.value
+          : this.nextRecurrenceDate,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
       isSynced: data.isSynced.present ? data.isSynced.value : this.isSynced,
     );
@@ -732,6 +863,9 @@ class Expense extends drift.DataClass implements drift.Insertable<Expense> {
           ..write('categoryId: $categoryId, ')
           ..write('date: $date, ')
           ..write('paymentMethod: $paymentMethod, ')
+          ..write('isRecurring: $isRecurring, ')
+          ..write('recurrenceInterval: $recurrenceInterval, ')
+          ..write('nextRecurrenceDate: $nextRecurrenceDate, ')
           ..write('createdAt: $createdAt, ')
           ..write('isSynced: $isSynced')
           ..write(')'))
@@ -746,6 +880,9 @@ class Expense extends drift.DataClass implements drift.Insertable<Expense> {
     categoryId,
     date,
     paymentMethod,
+    isRecurring,
+    recurrenceInterval,
+    nextRecurrenceDate,
     createdAt,
     isSynced,
   );
@@ -759,6 +896,9 @@ class Expense extends drift.DataClass implements drift.Insertable<Expense> {
           other.categoryId == this.categoryId &&
           other.date == this.date &&
           other.paymentMethod == this.paymentMethod &&
+          other.isRecurring == this.isRecurring &&
+          other.recurrenceInterval == this.recurrenceInterval &&
+          other.nextRecurrenceDate == this.nextRecurrenceDate &&
           other.createdAt == this.createdAt &&
           other.isSynced == this.isSynced);
 }
@@ -770,6 +910,9 @@ class ExpensesCompanion extends drift.UpdateCompanion<Expense> {
   final drift.Value<int?> categoryId;
   final drift.Value<DateTime> date;
   final drift.Value<String?> paymentMethod;
+  final drift.Value<bool> isRecurring;
+  final drift.Value<String?> recurrenceInterval;
+  final drift.Value<DateTime?> nextRecurrenceDate;
   final drift.Value<DateTime> createdAt;
   final drift.Value<bool> isSynced;
   const ExpensesCompanion({
@@ -779,6 +922,9 @@ class ExpensesCompanion extends drift.UpdateCompanion<Expense> {
     this.categoryId = const drift.Value.absent(),
     this.date = const drift.Value.absent(),
     this.paymentMethod = const drift.Value.absent(),
+    this.isRecurring = const drift.Value.absent(),
+    this.recurrenceInterval = const drift.Value.absent(),
+    this.nextRecurrenceDate = const drift.Value.absent(),
     this.createdAt = const drift.Value.absent(),
     this.isSynced = const drift.Value.absent(),
   });
@@ -789,6 +935,9 @@ class ExpensesCompanion extends drift.UpdateCompanion<Expense> {
     this.categoryId = const drift.Value.absent(),
     required DateTime date,
     this.paymentMethod = const drift.Value.absent(),
+    this.isRecurring = const drift.Value.absent(),
+    this.recurrenceInterval = const drift.Value.absent(),
+    this.nextRecurrenceDate = const drift.Value.absent(),
     this.createdAt = const drift.Value.absent(),
     this.isSynced = const drift.Value.absent(),
   }) : amount = drift.Value(amount),
@@ -800,6 +949,9 @@ class ExpensesCompanion extends drift.UpdateCompanion<Expense> {
     drift.Expression<int>? categoryId,
     drift.Expression<DateTime>? date,
     drift.Expression<String>? paymentMethod,
+    drift.Expression<bool>? isRecurring,
+    drift.Expression<String>? recurrenceInterval,
+    drift.Expression<DateTime>? nextRecurrenceDate,
     drift.Expression<DateTime>? createdAt,
     drift.Expression<bool>? isSynced,
   }) {
@@ -810,6 +962,10 @@ class ExpensesCompanion extends drift.UpdateCompanion<Expense> {
       if (categoryId != null) 'category_id': categoryId,
       if (date != null) 'date': date,
       if (paymentMethod != null) 'payment_method': paymentMethod,
+      if (isRecurring != null) 'is_recurring': isRecurring,
+      if (recurrenceInterval != null) 'recurrence_interval': recurrenceInterval,
+      if (nextRecurrenceDate != null)
+        'next_recurrence_date': nextRecurrenceDate,
       if (createdAt != null) 'created_at': createdAt,
       if (isSynced != null) 'is_synced': isSynced,
     });
@@ -822,6 +978,9 @@ class ExpensesCompanion extends drift.UpdateCompanion<Expense> {
     drift.Value<int?>? categoryId,
     drift.Value<DateTime>? date,
     drift.Value<String?>? paymentMethod,
+    drift.Value<bool>? isRecurring,
+    drift.Value<String?>? recurrenceInterval,
+    drift.Value<DateTime?>? nextRecurrenceDate,
     drift.Value<DateTime>? createdAt,
     drift.Value<bool>? isSynced,
   }) {
@@ -832,6 +991,9 @@ class ExpensesCompanion extends drift.UpdateCompanion<Expense> {
       categoryId: categoryId ?? this.categoryId,
       date: date ?? this.date,
       paymentMethod: paymentMethod ?? this.paymentMethod,
+      isRecurring: isRecurring ?? this.isRecurring,
+      recurrenceInterval: recurrenceInterval ?? this.recurrenceInterval,
+      nextRecurrenceDate: nextRecurrenceDate ?? this.nextRecurrenceDate,
       createdAt: createdAt ?? this.createdAt,
       isSynced: isSynced ?? this.isSynced,
     );
@@ -858,6 +1020,19 @@ class ExpensesCompanion extends drift.UpdateCompanion<Expense> {
     if (paymentMethod.present) {
       map['payment_method'] = drift.Variable<String>(paymentMethod.value);
     }
+    if (isRecurring.present) {
+      map['is_recurring'] = drift.Variable<bool>(isRecurring.value);
+    }
+    if (recurrenceInterval.present) {
+      map['recurrence_interval'] = drift.Variable<String>(
+        recurrenceInterval.value,
+      );
+    }
+    if (nextRecurrenceDate.present) {
+      map['next_recurrence_date'] = drift.Variable<DateTime>(
+        nextRecurrenceDate.value,
+      );
+    }
     if (createdAt.present) {
       map['created_at'] = drift.Variable<DateTime>(createdAt.value);
     }
@@ -876,6 +1051,9 @@ class ExpensesCompanion extends drift.UpdateCompanion<Expense> {
           ..write('categoryId: $categoryId, ')
           ..write('date: $date, ')
           ..write('paymentMethod: $paymentMethod, ')
+          ..write('isRecurring: $isRecurring, ')
+          ..write('recurrenceInterval: $recurrenceInterval, ')
+          ..write('nextRecurrenceDate: $nextRecurrenceDate, ')
           ..write('createdAt: $createdAt, ')
           ..write('isSynced: $isSynced')
           ..write(')'))
@@ -1704,6 +1882,9 @@ typedef $$ExpensesTableCreateCompanionBuilder =
       drift.Value<int?> categoryId,
       required DateTime date,
       drift.Value<String?> paymentMethod,
+      drift.Value<bool> isRecurring,
+      drift.Value<String?> recurrenceInterval,
+      drift.Value<DateTime?> nextRecurrenceDate,
       drift.Value<DateTime> createdAt,
       drift.Value<bool> isSynced,
     });
@@ -1715,6 +1896,9 @@ typedef $$ExpensesTableUpdateCompanionBuilder =
       drift.Value<int?> categoryId,
       drift.Value<DateTime> date,
       drift.Value<String?> paymentMethod,
+      drift.Value<bool> isRecurring,
+      drift.Value<String?> recurrenceInterval,
+      drift.Value<DateTime?> nextRecurrenceDate,
       drift.Value<DateTime> createdAt,
       drift.Value<bool> isSynced,
     });
@@ -1774,6 +1958,21 @@ class $$ExpensesTableFilterComposer
 
   drift.ColumnFilters<String> get paymentMethod => $composableBuilder(
     column: $table.paymentMethod,
+    builder: (column) => drift.ColumnFilters(column),
+  );
+
+  drift.ColumnFilters<bool> get isRecurring => $composableBuilder(
+    column: $table.isRecurring,
+    builder: (column) => drift.ColumnFilters(column),
+  );
+
+  drift.ColumnFilters<String> get recurrenceInterval => $composableBuilder(
+    column: $table.recurrenceInterval,
+    builder: (column) => drift.ColumnFilters(column),
+  );
+
+  drift.ColumnFilters<DateTime> get nextRecurrenceDate => $composableBuilder(
+    column: $table.nextRecurrenceDate,
     builder: (column) => drift.ColumnFilters(column),
   );
 
@@ -1845,6 +2044,21 @@ class $$ExpensesTableOrderingComposer
     builder: (column) => drift.ColumnOrderings(column),
   );
 
+  drift.ColumnOrderings<bool> get isRecurring => $composableBuilder(
+    column: $table.isRecurring,
+    builder: (column) => drift.ColumnOrderings(column),
+  );
+
+  drift.ColumnOrderings<String> get recurrenceInterval => $composableBuilder(
+    column: $table.recurrenceInterval,
+    builder: (column) => drift.ColumnOrderings(column),
+  );
+
+  drift.ColumnOrderings<DateTime> get nextRecurrenceDate => $composableBuilder(
+    column: $table.nextRecurrenceDate,
+    builder: (column) => drift.ColumnOrderings(column),
+  );
+
   drift.ColumnOrderings<DateTime> get createdAt => $composableBuilder(
     column: $table.createdAt,
     builder: (column) => drift.ColumnOrderings(column),
@@ -1904,6 +2118,21 @@ class $$ExpensesTableAnnotationComposer
 
   drift.GeneratedColumn<String> get paymentMethod => $composableBuilder(
     column: $table.paymentMethod,
+    builder: (column) => column,
+  );
+
+  drift.GeneratedColumn<bool> get isRecurring => $composableBuilder(
+    column: $table.isRecurring,
+    builder: (column) => column,
+  );
+
+  drift.GeneratedColumn<String> get recurrenceInterval => $composableBuilder(
+    column: $table.recurrenceInterval,
+    builder: (column) => column,
+  );
+
+  drift.GeneratedColumn<DateTime> get nextRecurrenceDate => $composableBuilder(
+    column: $table.nextRecurrenceDate,
     builder: (column) => column,
   );
 
@@ -1971,6 +2200,11 @@ class $$ExpensesTableTableManager
                 drift.Value<int?> categoryId = const drift.Value.absent(),
                 drift.Value<DateTime> date = const drift.Value.absent(),
                 drift.Value<String?> paymentMethod = const drift.Value.absent(),
+                drift.Value<bool> isRecurring = const drift.Value.absent(),
+                drift.Value<String?> recurrenceInterval =
+                    const drift.Value.absent(),
+                drift.Value<DateTime?> nextRecurrenceDate =
+                    const drift.Value.absent(),
                 drift.Value<DateTime> createdAt = const drift.Value.absent(),
                 drift.Value<bool> isSynced = const drift.Value.absent(),
               }) => ExpensesCompanion(
@@ -1980,6 +2214,9 @@ class $$ExpensesTableTableManager
                 categoryId: categoryId,
                 date: date,
                 paymentMethod: paymentMethod,
+                isRecurring: isRecurring,
+                recurrenceInterval: recurrenceInterval,
+                nextRecurrenceDate: nextRecurrenceDate,
                 createdAt: createdAt,
                 isSynced: isSynced,
               ),
@@ -1991,6 +2228,11 @@ class $$ExpensesTableTableManager
                 drift.Value<int?> categoryId = const drift.Value.absent(),
                 required DateTime date,
                 drift.Value<String?> paymentMethod = const drift.Value.absent(),
+                drift.Value<bool> isRecurring = const drift.Value.absent(),
+                drift.Value<String?> recurrenceInterval =
+                    const drift.Value.absent(),
+                drift.Value<DateTime?> nextRecurrenceDate =
+                    const drift.Value.absent(),
                 drift.Value<DateTime> createdAt = const drift.Value.absent(),
                 drift.Value<bool> isSynced = const drift.Value.absent(),
               }) => ExpensesCompanion.insert(
@@ -2000,6 +2242,9 @@ class $$ExpensesTableTableManager
                 categoryId: categoryId,
                 date: date,
                 paymentMethod: paymentMethod,
+                isRecurring: isRecurring,
+                recurrenceInterval: recurrenceInterval,
+                nextRecurrenceDate: nextRecurrenceDate,
                 createdAt: createdAt,
                 isSynced: isSynced,
               ),

@@ -53,6 +53,9 @@ class ExpenseRepositoryImpl implements ExpenseRepository {
           'date': expense.date.toIso8601String(),
           'payment_method': expense.paymentMethod,
           'created_at': expense.createdAt.toIso8601String(),
+          'is_recurring': expense.isRecurring,
+          'recurrence_interval': expense.recurrenceInterval,
+          'next_recurrence_date': expense.nextRecurrenceDate?.toIso8601String(),
         });
 
         // 3. Marquer comme synchronisé en local

@@ -11,7 +11,7 @@ class ExpenseListPage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final expensesAsync = ref.watch(expenseListProvider);
-    final currencyFormat = NumberFormat.currency(locale: 'fr_FR', symbol: '€');
+    final currencyFormat = NumberFormat.currency(locale: 'fr_FR', symbol: 'FCFA');
 
     return Scaffold(
       appBar: AppBar(title: const Text('Mes Dépenses')),
@@ -88,7 +88,13 @@ class ExpenseListPage extends ConsumerWidget {
                       color: Colors.white,
                     ),
                   ),
-                  title: Text(expense.description ?? 'Dépense'),
+                  title: Row(
+                    children: [
+                      Expanded(child: Text(expense.description ?? 'Dépense')),
+                      if (expense.isRecurring)
+                         Icon(Icons.cable, size: 16, color: Colors.grey), // Icône récurrent
+                    ],
+                  ),
                   subtitle: Text(
                     '${category?.name ?? "Non classé"} • ${DateFormat('dd/MM/yyyy').format(expense.date)}',
                   ),

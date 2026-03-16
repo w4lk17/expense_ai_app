@@ -22,6 +22,10 @@ class Expenses extends Table {
   IntColumn get categoryId => integer().nullable().references(Categories, #id)();
   DateTimeColumn get date => dateTime()();
   TextColumn get paymentMethod => text().nullable()();
+  BoolColumn get isRecurring => boolean().withDefault(const Constant(false))();
+  TextColumn get recurrenceInterval =>
+      text().nullable().withDefault(const Constant('monthly'))(); // 'monthly', 'weekly'
+  DateTimeColumn get nextRecurrenceDate => dateTime().nullable()(); // Date de la prochaine génération
   DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
   BoolColumn get isSynced => boolean().withDefault(const Constant(false))();
 }
@@ -51,7 +55,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase([QueryExecutor? executor]) : super(executor ?? openConnection());
 
   @override
-  int get schemaVersion => 2; // On incrémente la version car on ajoute une table
+  int get schemaVersion => 3; // INCREMENTATION (on passe de 2 à 3)
 
   // --- SEED DATA (Mission 2) ---
   // Peuple la base avec des catégories par défaut si vide
@@ -76,6 +80,12 @@ class AppDatabase extends _$AppDatabase {
         // Gestion des migrations futures
         if (from < 2) {
           await m.createTable(budgets);
+        }
+        if (from < 3) {
+          // Ajout des colonnes récurrentes
+          await m.addColumn(expenses, expenses.isRecurring);
+          await m.addColumn(expenses, expenses.recurrenceInterval);
+          await m.addColumn(expenses, expenses.nextRecurrenceDate);
         }
       },
     );
@@ -108,16 +118,56 @@ class AppDatabase extends _$AppDatabase {
     });
   }
 
-  // Récupérer les dépenses non synchronisées
   Future<List<Expense>> getUnsyncedExpenses() {
     return (select(expenses)..where((t) => t.isSynced.equals(false))).get();
   }
 
-  // Mettre à jour le statut de synchronisation
   Future<void> updateSyncStatus(int id, bool isSynced) {
     return (update(
       expenses,
     )..where((t) => t.id.equals(id))).write(ExpensesCompanion(isSynced: drift.Value(isSynced)));
+  }
+
+  // Récupère les dépenses récurrentes dont la date de prochaine échéance est dépassée
+  Future<List<Expense>> getDueRecurringExpenses(DateTime now) {
+    return (select(
+      expenses,
+    )..where((t) => t.isRecurring.equals(true) & t.nextRecurrenceDate.isSmallerOrEqualValue(now))).get();
+  }
+
+  // Met à jour la prochaine date de récurrence pour une dépense
+  Future<void> updateNextRecurrenceDate(int id, DateTime nextDate) {
+    return (update(
+      expenses,
+    )..where((t) => t.id.equals(id))).write(ExpensesCompanion(nextRecurrenceDate: Value(nextDate)));
+  }
+
+  // LA MÉTHODE PRINCIPALE À APPELER AU DÉMARRAGE
+  Future<void> processRecurringExpenses() async {
+    final now = DateTime.now();
+    // On récupère toutes les échéances dépassées
+    final dueExpenses = await getDueRecurringExpenses(now);
+
+    for (var expense in dueExpenses) {
+      // 1. Créer une NOUVELLE dépense (la copie pour ce mois-ci)
+      // La date de la nouvelle dépense = la date de prochaine échéance
+      final newExpense = ExpensesCompanion.insert(
+        amount: expense.amount,
+        description: Value(expense.description),
+        categoryId: Value(expense.categoryId),
+        date: expense.nextRecurrenceDate!, // La date est l'ancienne "next date"
+        paymentMethod: Value(expense.paymentMethod),
+        isRecurring: const Value(false),
+      );
+
+      await into(expenses).insert(newExpense);
+
+     // Calcul de la nouvelle date pour l'originale (+1 mois)
+      final currentNext = expense.nextRecurrenceDate!;
+      final newNextDate = DateTime(currentNext.year, currentNext.month + 1, currentNext.day);
+
+      await updateNextRecurrenceDate(expense.id, newNextDate);
+    }
   }
 
   // --- BUDGETS DAO ---

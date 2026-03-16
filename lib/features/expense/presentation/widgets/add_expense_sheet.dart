@@ -22,6 +22,7 @@ class _AddExpenseSheetState extends ConsumerState<AddExpenseSheet> {
   DateTime _selectedDate = DateTime.now();
   Category? _selectedCategory;
   bool get isEditing => widget.expenseToEdit != null;
+  bool _isRecurring = false;
 
   @override
   void initState() {
@@ -37,31 +38,49 @@ class _AddExpenseSheetState extends ConsumerState<AddExpenseSheet> {
     }
   }
 
-  Future<void> _saveExpense() async {
+    Future<void> _saveExpense() async {
     if (_formKey.currentState!.validate()) {
       final amount = double.tryParse(_amountController.text);
       if (amount == null) return;
 
+      // --- 1. CALCUL DE LA RÉCURRENCE ---
+      DateTime? nextRecurrence;
+      if (_isRecurring && !isEditing) {
+        // Si c'est une nouvelle dépense récurrente, on calcule la prochaine échéance (+1 mois)
+        nextRecurrence = DateTime(_selectedDate.year, _selectedDate.month + 1, _selectedDate.day);
+      }
+
+      // --- 2. EXÉCUTION ---
       if (isEditing) {
-        // MODE UPDATE
+        // MODE UPDATE (Modification)
+        // copyWith attend des valeurs BRUTES (pas de drift.Value)
         final updatedExpense = widget.expenseToEdit!.copyWith(
           amount: amount,
           description: drift.Value(_descController.text),
-          date: _selectedDate,
-          categoryId: drift.Value(_selectedCategory?.id),
+          date: _selectedDate, // DateTime
+          categoryId: drift.Value(_selectedCategory?.id), // int? (peut être null)
         );
         await ref.read(expenseRepositoryProvider).updateExpense(updatedExpense);
       } else {
-        // MODE CREATE
+        // MODE CREATE (Création)
+        // ExpensesCompanion.insert attend :
+        // - Valeurs brutes pour les champs obligatoires (amount, date)
+        // - drift.Value() pour les champs optionnels
         final expense = ExpensesCompanion.insert(
+          // Champs obligatoires (bruts)
           amount: amount,
-          description: drift.Value(_descController.text),
           date: _selectedDate,
+
+          // Champs optionnels (wrappés)
+          description: drift.Value(_descController.text),
           categoryId: drift.Value(_selectedCategory?.id),
+          isRecurring: drift.Value(_isRecurring),
+          nextRecurrenceDate: drift.Value(nextRecurrence), // Sera null si pas récurrent
         );
+
         await ref.read(expenseRepositoryProvider).addExpense(expense);
 
-        // TENTER LA SYNC IMMEDIATE
+        // TENTATIVE DE SYNCHRONISATION IMMÉDIATE
         final user = ref.read(currentUserProvider);
         if (user != null) {
           await ref.read(expenseRepositoryProvider).syncExpenses(user.id);
@@ -115,6 +134,7 @@ class _AddExpenseSheetState extends ConsumerState<AddExpenseSheet> {
               data: (categories) {
                 return DropdownButtonFormField<Category>(
                   initialValue: _selectedCategory,
+                  hint: const Text('Sélectionner une catégorie'),
                   decoration: const InputDecoration(labelText: 'Catégorie', prefixIcon: Icon(Icons.category)),
                   items: categories.map((cat) {
                     return DropdownMenuItem(value: cat, child: Text(cat.name));
@@ -144,6 +164,20 @@ class _AddExpenseSheetState extends ConsumerState<AddExpenseSheet> {
                     if (picked != null) setState(() => _selectedDate = picked);
                   },
                   child: Text('${_selectedDate.day}/${_selectedDate.month}/${_selectedDate.year}'),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                const Text('Dépense récurrente (mensuelle)'),
+                Switch(
+                  value: _isRecurring,
+                  onChanged: (val) {
+                    setState(() {
+                      _isRecurring = val;
+                    });
+                  },
                 ),
               ],
             ),

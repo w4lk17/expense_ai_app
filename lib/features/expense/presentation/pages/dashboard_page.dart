@@ -13,7 +13,7 @@ class DashboardPage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final expensesByCategory = ref.watch(expensesByCategoryProvider);
     final totalMonth = ref.watch(totalMonthProvider);
-    final currencyFormat = NumberFormat.currency(locale: 'fr_FR', symbol: '€');
+    final currencyFormat = NumberFormat.currency(locale: 'fr_FR', symbol: 'FCFA');
 
     return Scaffold(
       appBar: AppBar(title: const Text('Tableau de bord')),
