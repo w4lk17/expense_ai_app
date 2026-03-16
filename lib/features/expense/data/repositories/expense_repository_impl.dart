@@ -41,25 +41,30 @@ class ExpenseRepositoryImpl implements ExpenseRepository {
       if (unsyncedExpenses.isEmpty) return;
 
       for (var expense in unsyncedExpenses) {
-        // On essaie d'envoyer
-        await _supabase.from('expenses').insert({
-          'user_id': userId,
-          'amount': expense.amount,
-          'description': expense.description,
-          'category_id': expense.categoryId,
-          'date': expense.date.toIso8601String(),
-          'payment_method': expense.paymentMethod,
-          'created_at': expense.createdAt.toIso8601String(),
-          'is_recurring': expense.isRecurring,
-          'recurrence_interval': expense.recurrenceInterval,
-          'next_recurrence_date': expense.nextRecurrenceDate?.toIso8601String(),
-        });
-        // Si succès, on update le flag
-        await _db.updateSyncStatus(expense.id, true);
+        try {
+          // 1. Envoi vers Supabase
+          await _supabase.from('expenses').insert({
+            'user_id': userId,
+            'amount': expense.amount,
+            'description': expense.description,
+            'category_id': expense.categoryId,
+            'date': expense.date.toIso8601String(),
+            'payment_method': expense.paymentMethod,
+            'created_at': expense.createdAt.toIso8601String(),
+            'is_recurring': expense.isRecurring,
+            'recurrence_interval': expense.recurrenceInterval,
+            'next_recurrence_date': expense.nextRecurrenceDate?.toIso8601String(),
+          });
+
+          // 2. Mise à jour du flag local : C'est crucial pour faire disparaitre l'icône "Cloud Off"
+          await _db.updateSyncStatus(expense.id, true);
+        } catch (e) {
+          print("Erreur sync sur une dépense: $e");
+          // On continue quand même pour voir si les autres passent
+        }
       }
     } catch (e) {
-      // Si pas de réseau ou erreur, on ne fait rien.
-      // La dépense reste en local (isSynced = false) et sera envoyée plus tard.
+      print("Erreur globale de sync: $e");
     }
   }
 }
