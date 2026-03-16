@@ -24,7 +24,7 @@ class ExpenseRepositoryImpl implements ExpenseRepository {
     return _db.insertExpense(expense);
   }
 
- @override
+  @override
   Future<void> updateExpense(Expense expense) {
     return _db.updateExpense(expense);
   }
@@ -36,15 +36,12 @@ class ExpenseRepositoryImpl implements ExpenseRepository {
 
   @override
   Future<void> syncExpenses(String userId) async {
-    // 1. Récupérer les dépenses locales non synchronisées
-    // (Il faut ajouter une méthode DAO pour ça : getUnsyncedExpenses)
-    final unsyncedExpenses = await _db.getUnsyncedExpenses();
+    try {
+      final unsyncedExpenses = await _db.getUnsyncedExpenses();
+      if (unsyncedExpenses.isEmpty) return;
 
-    if (unsyncedExpenses.isEmpty) return;
-
-    // 2. Les envoyer à Supabase
-    for (var expense in unsyncedExpenses) {
-      try {
+      for (var expense in unsyncedExpenses) {
+        // On essaie d'envoyer
         await _supabase.from('expenses').insert({
           'user_id': userId,
           'amount': expense.amount,
@@ -57,13 +54,12 @@ class ExpenseRepositoryImpl implements ExpenseRepository {
           'recurrence_interval': expense.recurrenceInterval,
           'next_recurrence_date': expense.nextRecurrenceDate?.toIso8601String(),
         });
-
-        // 3. Marquer comme synchronisé en local
+        // Si succès, on update le flag
         await _db.updateSyncStatus(expense.id, true);
-      } catch (e) {
-        print('Erreur sync dépense ${expense.id}: $e');
-        // On continue même si erreur (on réessaiera plus tard)
       }
+    } catch (e) {
+      // Si pas de réseau ou erreur, on ne fait rien.
+      // La dépense reste en local (isSynced = false) et sera envoyée plus tard.
     }
   }
 }

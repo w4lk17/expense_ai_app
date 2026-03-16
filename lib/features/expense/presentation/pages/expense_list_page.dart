@@ -79,20 +79,30 @@ class ExpenseListPage extends ConsumerWidget {
                       builder: (context) => AddExpenseSheet(expenseToEdit: expense),
                     );
                   },
-                  leading: CircleAvatar(
-                    backgroundColor: category != null ? Color(category.color ?? 0xFF9E9E9E) : Colors.grey,
-                    child: Icon(
-                      category != null
-                          ? IconData(category.icon ?? 0xe3a7, fontFamily: 'MaterialIcons')
-                          : Icons.attach_money,
-                      color: Colors.white,
-                    ),
+                  leading: Stack(
+                    children: [
+                      CircleAvatar(
+                        backgroundColor: category != null ? Color(category.color ?? 0xFF9E9E9E) : Colors.grey,
+                        child: Icon(
+                          category != null
+                              ? IconData(category.icon ?? 0xe3a7, fontFamily: 'MaterialIcons')
+                              : Icons.attach_money,
+                          color: Colors.white,
+                        ),
+                      ),
+                      // Indicateur "Cloud" si synchronisé, "Cloud Off" si non
+                      if (!expense.isSynced)
+                        const Positioned(
+                          bottom: 0,
+                          right: 0,
+                          child: Icon(Icons.cloud_off, size: 14, color: Colors.red),
+                        ),
+                    ],
                   ),
                   title: Row(
                     children: [
                       Expanded(child: Text(expense.description ?? 'Dépense')),
-                      if (expense.isRecurring)
-                         Icon(Icons.cable, size: 16, color: Colors.grey), // Icône récurrent
+                      if (expense.isRecurring) Icon(Icons.cable, size: 16, color: Colors.grey), // Icône récurrent
                     ],
                   ),
                   subtitle: Text(
