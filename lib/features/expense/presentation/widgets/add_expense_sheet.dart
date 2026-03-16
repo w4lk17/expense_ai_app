@@ -18,6 +18,7 @@ class _AddExpenseSheetState extends ConsumerState<AddExpenseSheet> {
   final _formKey = GlobalKey<FormState>();
   final _amountController = TextEditingController();
   final _descController = TextEditingController();
+  bool _isAiLoading = false;
 
   DateTime _selectedDate = DateTime.now();
   Category? _selectedCategory;
@@ -38,7 +39,7 @@ class _AddExpenseSheetState extends ConsumerState<AddExpenseSheet> {
     }
   }
 
-    Future<void> _saveExpense() async {
+  Future<void> _saveExpense() async {
     if (_formKey.currentState!.validate()) {
       final amount = double.tryParse(_amountController.text);
       if (amount == null) return;
@@ -91,6 +92,40 @@ class _AddExpenseSheetState extends ConsumerState<AddExpenseSheet> {
     }
   }
 
+  Future<void> _suggestCategory() async {
+    final text = _descController.text.trim();
+    if (text.isEmpty) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text("Entrez une description d'abord (ex: 'Uber')")));
+      return;
+    }
+
+    setState(() => _isAiLoading = true);
+
+    // Appel au repository (qui utilise notre Mock pour l'instant)
+    final suggestion = await ref.read(expenseRepositoryProvider).suggestCategory(text);
+
+    setState(() => _isAiLoading = false);
+
+    if (suggestion != null && mounted) {
+      // On cherche la catégorie correspondante dans la liste
+      final cats = ref.read(categoryListProvider).value;
+      if (cats != null) {
+        try {
+          // On ignore la casse pour trouver la catégorie
+          final match = cats.firstWhere((c) => c.name.toLowerCase() == suggestion.toLowerCase());
+          setState(() {
+            _selectedCategory = match;
+          });
+        } catch (e) {
+          // Si l'IA renvoie une catégorie inconnue, on ignore
+          print("Catégorie suggérée non trouvée: $suggestion");
+        }
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final categoriesAsync = ref.watch(categoryListProvider);
@@ -125,9 +160,32 @@ class _AddExpenseSheetState extends ConsumerState<AddExpenseSheet> {
               validator: (v) => v!.isEmpty ? 'Entrez un montant' : null,
             ),
             const SizedBox(height: 12),
-            TextFormField(
-              controller: _descController,
-              decoration: const InputDecoration(labelText: 'Description', prefixIcon: Icon(Icons.description)),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start, // Alignement
+              children: [
+                Expanded(
+                  child: TextFormField(
+                    controller: _descController,
+                    decoration: const InputDecoration(
+                      labelText: 'Description',
+                      prefixIcon: Icon(Icons.description),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 8), // Espace
+                // Bouton Magique (uniquement à la création pour l'instant)
+                if (!isEditing)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 8.0), // Aligner avec le champ
+                    child: IconButton(
+                      icon: _isAiLoading
+                          ? const SizedBox(width: 24, height: 24, child: CircularProgressIndicator(strokeWidth: 2))
+                          : const Icon(Icons.auto_fix_high), // Icône "Baguette Magique"
+                      tooltip: 'Suggérer la catégorie (IA)',
+                      onPressed: _isAiLoading ? null : _suggestCategory,
+                    ),
+                  ),
+              ],
             ),
             const SizedBox(height: 12),
             categoriesAsync.when(

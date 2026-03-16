@@ -1,4 +1,5 @@
 // lib/features/expense/data/repositories/expense_repository_impl.dart
+import 'package:expense_ai_app/features/ai_advisor/data/services/openai_service.dart';
 import 'package:expense_ai_app/features/expense/data/datasources/database.dart';
 import 'package:expense_ai_app/features/expense/domain/repositories/expense_repository.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -6,8 +7,9 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 class ExpenseRepositoryImpl implements ExpenseRepository {
   final AppDatabase _db;
   final SupabaseClient _supabase;
+  final OpenAIService _aiService;
 
-  ExpenseRepositoryImpl(this._db, this._supabase);
+  ExpenseRepositoryImpl(this._db, this._supabase, this._aiService);
 
   @override
   Stream<List<ExpenseWithCategory>> watchAllExpensesWithCategory() {
@@ -66,5 +68,10 @@ class ExpenseRepositoryImpl implements ExpenseRepository {
     } catch (e) {
       print("Erreur globale de sync: $e");
     }
+  }
+
+  @override
+  Future<String?> suggestCategory(String description) async {
+    return await _aiService.suggestCategory(description);
   }
 }

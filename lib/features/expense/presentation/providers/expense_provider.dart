@@ -1,4 +1,5 @@
 // lib/features/expense/presentation/providers/expense_provider.dart
+import 'package:expense_ai_app/features/ai_advisor/data/services/openai_service.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:expense_ai_app/core/providers/database_provider.dart';
 import 'package:expense_ai_app/features/expense/data/datasources/database.dart';
@@ -10,7 +11,8 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 final expenseRepositoryProvider = Provider<ExpenseRepository>((ref) {
   final db = ref.watch(databaseProvider);
   final supabase = Supabase.instance.client; // On récupère l'instance de Supabase
-  return ExpenseRepositoryImpl(db, supabase);
+  final aiService = OpenAIService(); // instance du service OpenAI
+  return ExpenseRepositoryImpl(db, supabase, aiService);
 });
 
 // Provider pour la liste des catégories (pour le dropdown)

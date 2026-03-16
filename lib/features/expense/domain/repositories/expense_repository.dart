@@ -8,4 +8,5 @@ abstract class ExpenseRepository {
   Future<void> deleteExpense(Expense expense);
   Future<List<Category>> getAllCategories();
   Future<void> syncExpenses(String userId);
+  Future<String?> suggestCategory(String description);
 }
