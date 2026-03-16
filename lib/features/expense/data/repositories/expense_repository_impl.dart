@@ -1,5 +1,5 @@
 // lib/features/expense/data/repositories/expense_repository_impl.dart
-import 'package:expense_ai_app/features/ai_advisor/data/services/openai_service.dart';
+import 'package:expense_ai_app/features/ai_advisor/data/services/ai_service_factory.dart';
 import 'package:expense_ai_app/features/expense/data/datasources/database.dart';
 import 'package:expense_ai_app/features/expense/domain/repositories/expense_repository.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';

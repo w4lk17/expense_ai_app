@@ -1,5 +1,5 @@
 // lib/features/expense/presentation/providers/expense_provider.dart
-import 'package:expense_ai_app/features/ai_advisor/data/services/openai_service.dart';
+import 'package:expense_ai_app/features/ai_advisor/data/services/ai_service_factory.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:expense_ai_app/core/providers/database_provider.dart';
 import 'package:expense_ai_app/features/expense/data/datasources/database.dart';
