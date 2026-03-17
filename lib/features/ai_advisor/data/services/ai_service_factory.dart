@@ -25,6 +25,11 @@ class OpenAIService implements AiService {
   Future<String?> suggestCategory(String inputText) {
     return _activeService.suggestCategory(inputText);
   }
+
+  @override
+  Future<String?> analyzeExpenses(String expenseSummary) {
+    return _activeService.analyzeExpenses(expenseSummary);
+  }
 }
 
 // On déplace le Mock ici pour la fallback
@@ -35,5 +40,11 @@ class MockService implements AiService {
     if (inputText.toLowerCase().contains('uber')) return 'Transport';
     if (inputText.toLowerCase().contains('carrefour')) return 'Alimentation';
     return 'Autre';
+  }
+
+    @override
+  Future<String?> analyzeExpenses(String expenseSummary) async {
+    await Future.delayed(const Duration(seconds: 1));
+    return "Analyse simulée : \n\n✅ Point fort : Vous dépensez peu en transport.\n⚠️ À surveiller : Vos dépenses en loisirs sont élevées ce mois-ci.";
   }
 }

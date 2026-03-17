@@ -40,4 +40,35 @@ class GLMService implements AiService {
       return null;
     }
   }
+
+  @override
+  Future<String?> analyzeExpenses(String expenseSummary) async {
+    try {
+      final systemInstruction = OpenAIChatCompletionChoiceMessageModel(
+        role: OpenAIChatMessageRole.system,
+        content: [
+          OpenAIChatCompletionChoiceMessageContentItemModel.text(
+            "Tu es un conseiller financier expert. Analyse les dépenses fournies. "
+            "Donne un point fort et un conseil d'amélioration en 2 phrases max.",
+          ),
+        ],
+      );
+
+      final userMessage = OpenAIChatCompletionChoiceMessageModel(
+        role: OpenAIChatMessageRole.user,
+        content: [OpenAIChatCompletionChoiceMessageContentItemModel.text(expenseSummary)],
+      );
+
+      final request = await OpenAI.instance.chat.create(
+        model: glmModel,
+        messages: [systemInstruction, userMessage],
+        maxTokens: 150,
+      );
+
+      return request.choices.first.message.content?.first.text;
+    } catch (e) {
+      print("Erreur GLM: $e");
+      return null;
+    }
+  }
 }

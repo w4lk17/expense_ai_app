@@ -74,4 +74,9 @@ class ExpenseRepositoryImpl implements ExpenseRepository {
   Future<String?> suggestCategory(String description) async {
     return await _aiService.suggestCategory(description);
   }
+
+  @override
+  Future<String?> analyzeExpenses(String summary) async {
+    return await _aiService.analyzeExpenses(summary);
+  }
 }

@@ -9,4 +9,5 @@ abstract class ExpenseRepository {
   Future<List<Category>> getAllCategories();
   Future<void> syncExpenses(String userId);
   Future<String?> suggestCategory(String description);
+  Future<String?> analyzeExpenses(String summary);
 }

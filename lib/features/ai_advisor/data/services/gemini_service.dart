@@ -51,4 +51,48 @@ class GeminiService implements AiService {
       return null;
     }
   }
+
+    @override
+  Future<String?> analyzeExpenses(String expenseSummary) async {
+    try {
+      final String apiUrl =
+          "https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=$geminiApiKey";
+
+      final prompt =
+          "Tu es un conseiller financier expert. Voici le résumé des dépenses d'un utilisateur pour ce mois :\n\n"
+          "$expenseSummary\n\n"
+          "Fais une analyse concise (max 3 phrases) en donnant :\n"
+          "1. Un point positif.\n"
+          "2. Un point d'attention ou de conseil.\n"
+          "Sois encourageant mais direct.";
+
+      final body = jsonEncode({
+        "contents": [
+          {
+            "parts": [
+              {"text": prompt},
+            ],
+          },
+        ],
+      });
+
+      final response = await http.post(
+        Uri.parse(apiUrl),
+        headers: {"Content-Type": "application/json"},
+        body: body,
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        final text = data['candidates'][0]['content']['parts'][0]['text'];
+        return text.trim();
+      } else {
+        print("Erreur API Gemini: ${response.body}");
+        return null;
+      }
+    } catch (e) {
+      print("Exception Gemini: $e");
+      return null;
+    }
+  }
 }
