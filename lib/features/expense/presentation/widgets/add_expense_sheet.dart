@@ -120,7 +120,6 @@ class _AddExpenseSheetState extends ConsumerState<AddExpenseSheet> {
           });
         } catch (e) {
           // Si l'IA renvoie une catégorie inconnue, on ignore
-          print("Catégorie suggérée non trouvée: $suggestion");
         }
       }
     }

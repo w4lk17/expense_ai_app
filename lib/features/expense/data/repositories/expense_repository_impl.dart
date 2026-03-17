@@ -61,7 +61,6 @@ class ExpenseRepositoryImpl implements ExpenseRepository {
           // 2. Mise à jour du flag local : C'est crucial pour faire disparaitre l'icône "Cloud Off"
           await _db.updateSyncStatus(expense.id, true);
         } catch (e) {
-          print("Erreur sync sur une dépense: $e");
           // On continue quand même pour voir si les autres passent
         }
       }
