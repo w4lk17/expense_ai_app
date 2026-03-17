@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 class AppTheme {
   static const Color primaryColor = Color(0xFF4F46E5); // Indigo
@@ -15,6 +16,8 @@ class AppTheme {
         elevation: 0,
         backgroundColor: Colors.transparent,
         foregroundColor: Colors.black,
+        // FORCE les icones de la status bar en NOIR (mode clair)
+        systemOverlayStyle: SystemUiOverlayStyle.dark, 
       ),
       floatingActionButtonTheme: const FloatingActionButtonThemeData(
         backgroundColor: primaryColor,
@@ -46,6 +49,7 @@ class AppTheme {
         elevation: 0,
         backgroundColor: Colors.transparent,
         foregroundColor: Colors.white,
+        systemOverlayStyle: SystemUiOverlayStyle.light,
       ),
       floatingActionButtonTheme: FloatingActionButtonThemeData(
         backgroundColor: primaryColor.withBlue(200), // Un peu plus clair pour le dark

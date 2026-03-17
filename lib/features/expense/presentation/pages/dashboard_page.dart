@@ -170,7 +170,7 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
                 ),
               ),
               const SizedBox(height: 24),
-
+              
               Text('Répartition par catégorie', style: Theme.of(context).textTheme.titleLarge),
               const SizedBox(height: 16),
               if (expensesByCategory.isEmpty)

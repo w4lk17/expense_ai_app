@@ -243,7 +243,9 @@ class _AddExpenseSheetState extends ConsumerState<AddExpenseSheet> {
               onPressed: _saveExpense,
               style: ElevatedButton.styleFrom(
                 padding: const EdgeInsets.symmetric(vertical: 16),
-                backgroundColor: isEditing ? Colors.orange : null, // Couleur différente si édition
+                backgroundColor: isEditing ? Colors.orange : Theme.of(context).colorScheme.primary,
+                // On force le texte blanc pour le contraste
+                foregroundColor: Colors.white,
               ),
               child: Text(isEditing ? 'Mettre à jour' : 'Enregistrer'),
             ),

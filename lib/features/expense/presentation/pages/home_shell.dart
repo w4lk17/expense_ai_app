@@ -1,3 +1,4 @@
+import 'package:expense_ai_app/core/providers/connectivity_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:expense_ai_app/features/auth/presentation/providers/auth_provider.dart';
@@ -39,8 +40,30 @@ class _HomeShellState extends ConsumerState<HomeShell> {
 
   @override
   Widget build(BuildContext context) {
+    final connectionStatus = ref.watch(connectivityProvider);
+
     return Scaffold(
-      body: _pages[_currentIndex],
+      // utiliser animatedswitcher pour une transition fluide entre les pages
+      body: Column(
+        children: [
+          // Banner de offline
+          if (connectionStatus == ConnectionStatus.offline)
+            Container(
+              width: double.infinity,
+              color: Colors.orange.shade100,
+              padding: const EdgeInsets.symmetric(vertical: 8.0),
+              child: const Center(
+                child: Text(
+                  "⚠️ Mode Hors Ligne - Les modifications seront synchronisées plus tard",
+                  style: TextStyle(color: Colors.orange, fontWeight: FontWeight.bold),
+                ),
+              ),
+            ),
+          Expanded(
+            child: AnimatedSwitcher(duration: const Duration(milliseconds: 300), child: _pages[_currentIndex]),
+          ),
+        ],
+      ),
       bottomNavigationBar: NavigationBar(
         selectedIndex: _currentIndex,
         onDestinationSelected: (index) {
