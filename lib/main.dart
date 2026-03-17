@@ -1,3 +1,4 @@
+import 'package:expense_ai_app/core/providers/theme_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -26,24 +27,30 @@ class MyApp extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final themeMode = ref.watch(themeProvider); // On écoute le mode
+
     return MaterialApp(
       title: 'Expense AI',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme,
+      darkTheme: AppTheme.darkTheme,
+      themeMode: themeMode,
       // On écoute l'état de l'authentification
-      home: ref.watch(authStateProvider).when(
-        data: (authState) {
-          final session = authState.session;
-          // Si session existe -> App, sinon -> Login
-          if (session != null) {
-            return const HomeShell();
-          } else {
-            return const LoginPage();
-          }
-        },
-        loading: () => const Scaffold(body: Center(child: CircularProgressIndicator())),
-        error: (e, s) => Scaffold(body: Center(child: Text('Erreur Auth: $e'))),
-      ),
+      home: ref
+          .watch(authStateProvider)
+          .when(
+            data: (authState) {
+              final session = authState.session;
+              // Si session existe -> App, sinon -> Login
+              if (session != null) {
+                return const HomeShell();
+              } else {
+                return const LoginPage();
+              }
+            },
+            loading: () => const Scaffold(body: Center(child: CircularProgressIndicator())),
+            error: (e, s) => Scaffold(body: Center(child: Text('Erreur Auth: $e'))),
+          ),
     );
   }
 }

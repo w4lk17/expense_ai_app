@@ -1,3 +1,4 @@
+import 'package:expense_ai_app/core/providers/theme_provider.dart';
 import 'package:expense_ai_app/features/expense/data/datasources/database.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -33,9 +34,9 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
     final totalMonth = ref.read(totalMonthProvider);
 
     final buffer = StringBuffer();
-    buffer.writeln("Total du mois: ${totalMonth.toStringAsFixed(2)}€");
+    buffer.writeln("Total du mois: ${totalMonth.toStringAsFixed(2)}FCFA");
     expensesByCategory.forEach((cat, amount) {
-      buffer.writeln("- ${cat.name}: ${amount.toStringAsFixed(2)}€");
+      buffer.writeln("- ${cat.name}: ${amount.toStringAsFixed(2)}FCFA");
     });
 
     final advice = await ref.read(expenseRepositoryProvider).analyzeExpenses(buffer.toString());
@@ -58,17 +59,28 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
   Widget build(BuildContext context) {
     final expensesByCategory = ref.watch(expensesByCategoryProvider);
     final totalMonth = ref.watch(totalMonthProvider);
-    final currencyFormat = NumberFormat.currency(locale: 'fr_FR', symbol: '€');
+    final currencyFormat = NumberFormat.currency(locale: 'fr_FR', symbol: 'FCFA');
     final expensesAsync = ref.watch(expenseListProvider);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Tableau de bord')),
+      appBar: AppBar(
+        title: const Text('Tableau de bord'),
+        actions: [
+          IconButton(
+            icon: Icon(ref.watch(themeProvider) == ThemeMode.dark ? Icons.light_mode : Icons.dark_mode),
+            onPressed: () {
+              ref.read(themeProvider.notifier).toggleTheme();
+            },
+          ),
+        ],
+      ),
       body: expensesAsync.when(
         data: (_) => SingleChildScrollView(
           padding: const EdgeInsets.all(16.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              // Affichage du total du mois
               Card(
                 elevation: 4,
                 child: Padding(
@@ -86,7 +98,7 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
                   ),
                 ),
               ),
-
+              // Carte Alerte si dépassement de budget
               if (totalMonth > 1000)
                 Card(
                   margin: const EdgeInsets.only(top: 16, bottom: 0),
@@ -99,7 +111,7 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
                         const SizedBox(width: 12),
                         Expanded(
                           child: Text(
-                            "Attention ! Vous avez dépassé votre budget mensuel virtuel (1000€).",
+                            "Attention ! Vous avez dépassé votre budget mensuel virtuel (1000 FCFA).",
                             style: TextStyle(color: Colors.red.shade900),
                           ),
                         ),
@@ -109,9 +121,10 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
                 ),
               const SizedBox(height: 16),
 
+              // Carte de l'IA Advisor
               Card(
                 elevation: 4,
-                color: Colors.blue.shade50,
+                color: Theme.of(context).colorScheme.primaryContainer,
                 child: Padding(
                   padding: const EdgeInsets.all(16.0),
                   child: Column(
@@ -119,11 +132,14 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
                     children: [
                       Row(
                         children: [
-                          const Icon(Icons.auto_awesome, color: Colors.deepPurple),
+                          Icon(Icons.auto_awesome, color: Theme.of(context).colorScheme.onPrimaryContainer),
                           const SizedBox(width: 8),
                           Text(
                             "Conseil de l'IA",
-                            style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+                            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                              fontWeight: FontWeight.bold,
+                              color: Theme.of(context).colorScheme.onPrimaryContainer,
+                            ),
                           ),
                         ],
                       ),
@@ -131,9 +147,12 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
                       if (_isLoadingAdvice)
                         const Center(child: CircularProgressIndicator())
                       else if (_aiAdvice != null)
-                        Text(_aiAdvice!)
+                        Text(_aiAdvice!, style: TextStyle(color: Theme.of(context).colorScheme.onPrimaryContainer))
                       else
-                        const Text("Obtenez une analyse personnalisée de vos dépenses."),
+                        Text(
+                          "Obtenez une analyse personnalisée de vos dépenses.",
+                          style: TextStyle(color: Theme.of(context).colorScheme.onPrimaryContainer),
+                        ),
                       const SizedBox(height: 12),
                       Center(
                         child: ElevatedButton.icon(
@@ -141,7 +160,7 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
                           icon: const Icon(Icons.analytics),
                           label: const Text("Analyser mon mois"),
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.deepPurple,
+                            backgroundColor: Theme.of(context).colorScheme.primary,
                             foregroundColor: Colors.white,
                           ),
                         ),
@@ -184,7 +203,7 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
         PieChartSectionData(
           color: color,
           value: total,
-          title: '${category.name}\n${total.toStringAsFixed(0)}€',
+          title: '${category.name}\n${total.toStringAsFixed(0)} FCFA',
           radius: 100,
           titleStyle: const TextStyle(
             fontSize: 12,
