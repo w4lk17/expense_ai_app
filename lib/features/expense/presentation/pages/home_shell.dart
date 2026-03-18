@@ -33,7 +33,7 @@ class _HomeShellState extends ConsumerState<HomeShell> {
         await ref.read(expenseRepositoryProvider).syncExpenses(user.id);
         // Si ça marche, Riverpod mettra à jour la liste automatiquement (Stream)
       } catch (e) {
-        print("Erreur sync au démarrage: $e"); // Normal si offline
+        // print("Erreur sync au démarrage: $e"); // Normal si offline
       }
     }
   }
@@ -50,12 +50,12 @@ class _HomeShellState extends ConsumerState<HomeShell> {
           if (connectionStatus == ConnectionStatus.offline)
             Container(
               width: double.infinity,
-              color: Colors.orange.shade100,
-              padding: const EdgeInsets.symmetric(vertical: 8.0),
+              color: Colors.orange.shade700,
+              padding: const EdgeInsets.symmetric(vertical: 6),
               child: const Center(
                 child: Text(
-                  "⚠️ Mode Hors Ligne - Les modifications seront synchronisées plus tard",
-                  style: TextStyle(color: Colors.orange, fontWeight: FontWeight.bold),
+                  "⚠️ Mode Hors Ligne",
+                  style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12),
                 ),
               ),
             ),

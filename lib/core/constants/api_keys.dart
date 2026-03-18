@@ -6,7 +6,6 @@ enum AiProvider { gemini, glm, mock }
 const AiProvider activeAiProvider = AiProvider.gemini; // Change ici pour switcher
 
 // Clés API
-const String geminiApiKey = 'AIzaSyBTSfySS3Jm-b42NkPqpcZ2oQtavXcq15Q';
 const String glmApiKey = 'TA_CLE_GLM_ICI'; // Souvent appelée API Key Zhipu AI
 
 // Configuration GLM (Endpoint spécifique si nécessaire)

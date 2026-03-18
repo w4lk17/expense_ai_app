@@ -12,22 +12,34 @@ class ThemeNotifier extends StateNotifier<ThemeMode> {
   Future<void> _loadTheme() async {
     final prefs = await SharedPreferences.getInstance();
     final isDark = prefs.getBool(_themeKey);
-
-    // Si null, on suit le système, sinon on applique le choix
     if (isDark != null) {
       state = isDark ? ThemeMode.dark : ThemeMode.light;
     }
   }
 
+  // NOUVELLE LOGIQUE : Détection du thème effectif
   Future<void> toggleTheme() async {
     final prefs = await SharedPreferences.getInstance();
-    final isDark = state == ThemeMode.dark;
 
-    // On inverse
-    state = isDark ? ThemeMode.light : ThemeMode.dark;
+    // On détermine si on est ACTUELLEMENT en mode sombre
+    // (Soit forcé, soit à cause du système)
+    bool isCurrentlyDark;
 
-    // On sauvegarde
-    await prefs.setBool(_themeKey, !isDark);
+    if (state == ThemeMode.dark) {
+      isCurrentlyDark = true;
+    } else if (state == ThemeMode.light) {
+      isCurrentlyDark = false;
+    } else {
+      // Mode System : on regarde la luminosité du platform
+      final brightness = WidgetsBinding.instance.platformDispatcher.platformBrightness;
+      isCurrentlyDark = brightness == Brightness.dark;
+    }
+
+    // On inverse l'état réel
+    final newMode = isCurrentlyDark ? ThemeMode.light : ThemeMode.dark;
+
+    state = newMode;
+    await prefs.setBool(_themeKey, newMode == ThemeMode.dark);
   }
 }
 

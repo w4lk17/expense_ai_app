@@ -67,7 +67,10 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
         title: const Text('Tableau de bord'),
         actions: [
           IconButton(
-            icon: Icon(ref.watch(themeProvider) == ThemeMode.dark ? Icons.light_mode : Icons.dark_mode),
+            icon: Icon(
+              // Si le thème appliqué est sombre, on montre le soleil
+              Theme.of(context).brightness == Brightness.dark ? Icons.light_mode : Icons.dark_mode,
+            ),
             onPressed: () {
               ref.read(themeProvider.notifier).toggleTheme();
             },
@@ -170,7 +173,7 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
                 ),
               ),
               const SizedBox(height: 24),
-              
+
               Text('Répartition par catégorie', style: Theme.of(context).textTheme.titleLarge),
               const SizedBox(height: 16),
               if (expensesByCategory.isEmpty)

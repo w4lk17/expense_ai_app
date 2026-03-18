@@ -1,15 +1,17 @@
 import 'dart:convert';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
-import 'package:expense_ai_app/core/constants/api_keys.dart';
 import '../../domain/services/ai_service.dart';
 
 class GeminiService implements AiService {
+String apiKey = dotenv.env['GEMINI_API_KEY'] ?? "";
+
   @override
   Future<String?> suggestCategory(String inputText) async {
     try {
       // URL de l'API Gemini (REST)
       final String apiUrl =
-          "https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=$geminiApiKey";
+          "https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=$apiKey";
 
       // Construction du prompt
       final prompt =
@@ -43,11 +45,11 @@ class GeminiService implements AiService {
         final text = data['candidates'][0]['content']['parts'][0]['text'];
         return text.trim();
       } else {
-        print("Erreur API Gemini: ${response.statusCode} - ${response.body}");
+        // print("Erreur API Gemini: ${response.statusCode} - ${response.body}");
         return null;
       }
     } catch (e) {
-      print("Exception Gemini: $e");
+      // print("Exception Gemini: $e");
       return null;
     }
   }
@@ -56,7 +58,7 @@ class GeminiService implements AiService {
   Future<String?> analyzeExpenses(String expenseSummary) async {
     try {
       final String apiUrl =
-          "https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=$geminiApiKey";
+          "https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=$apiKey";
 
       final prompt =
           "Tu es un conseiller financier expert. Voici le résumé des dépenses d'un utilisateur pour ce mois :\n\n"
@@ -87,11 +89,11 @@ class GeminiService implements AiService {
         final text = data['candidates'][0]['content']['parts'][0]['text'];
         return text.trim();
       } else {
-        print("Erreur API Gemini: ${response.body}");
+        // print("Erreur API Gemini: ${response.body}");
         return null;
       }
     } catch (e) {
-      print("Exception Gemini: $e");
+      // print("Exception Gemini: $e");
       return null;
     }
   }

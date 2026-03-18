@@ -1,5 +1,6 @@
 import 'package:expense_ai_app/core/providers/theme_provider.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -11,7 +12,7 @@ import 'features/expense/presentation/pages/home_shell.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-
+  await dotenv.load(fileName: ".env"); 
   // 1. Initialisation de Supabase
   await Supabase.initialize(
     url: SupabaseConstants.supabaseUrl,

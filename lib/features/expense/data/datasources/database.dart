@@ -67,12 +67,36 @@ class AppDatabase extends _$AppDatabase {
         // Insertion des catégories par défaut
         await batch((b) {
           b.insertAll(categories, [
-            CategoriesCompanion.insert(name: 'Alimentation', color: const Value(0xFFFF9800)),
-            CategoriesCompanion.insert(name: 'Transport', color: const Value(0xFF2196F3)),
-            CategoriesCompanion.insert(name: 'Logement', color: const Value(0xFF9C27B0)),
-            CategoriesCompanion.insert(name: 'Loisirs', color: const Value(0xFF4CAF50)),
-            CategoriesCompanion.insert(name: 'Santé', color: const Value(0xFFF44336)),
-            CategoriesCompanion.insert(name: 'Autre', color: const Value(0xFF607D8B)),
+            CategoriesCompanion.insert(
+              name: 'Alimentation',
+              color: const Value(0xFFFF9800),
+              icon: const Value(0xe56c),
+            ), // restaurant
+            CategoriesCompanion.insert(
+              name: 'Transport',
+              color: const Value(0xFF2196F3),
+              icon: const Value(0xe531),
+            ), // directions_car
+            CategoriesCompanion.insert(
+              name: 'Logement',
+              color: const Value(0xFF9C27B0),
+              icon: const Value(0xe88a),
+            ), // home
+            CategoriesCompanion.insert(
+              name: 'Loisirs',
+              color: const Value(0xFF4CAF50),
+              icon: const Value(0xe40f),
+            ), // movie
+            CategoriesCompanion.insert(
+              name: 'Santé',
+              color: const Value(0xFFF44336),
+              icon: const Value(0xe86d),
+            ), // medical_services
+            CategoriesCompanion.insert(
+              name: 'Autre',
+              color: const Value(0xFF607D8B),
+              icon: const Value(0xe5d3),
+            ), // category
           ]);
         });
       },
@@ -162,7 +186,7 @@ class AppDatabase extends _$AppDatabase {
 
       await into(expenses).insert(newExpense);
 
-     // Calcul de la nouvelle date pour l'originale (+1 mois)
+      // Calcul de la nouvelle date pour l'originale (+1 mois)
       final currentNext = expense.nextRecurrenceDate!;
       final newNextDate = DateTime(currentNext.year, currentNext.month + 1, currentNext.day);
 

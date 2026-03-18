@@ -65,7 +65,7 @@ class ExpenseRepositoryImpl implements ExpenseRepository {
         }
       }
     } catch (e) {
-      print("Erreur globale de sync: $e");
+      // print("Erreur globale de sync: $e");
     }
   }
 

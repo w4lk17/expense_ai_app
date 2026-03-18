@@ -36,7 +36,7 @@ class GLMService implements AiService {
 
       return request.choices.first.message.content?.first.text;
     } catch (e) {
-      print("Erreur GLM: $e");
+      // print("Erreur GLM: $e");
       return null;
     }
   }
@@ -67,7 +67,7 @@ class GLMService implements AiService {
 
       return request.choices.first.message.content?.first.text;
     } catch (e) {
-      print("Erreur GLM: $e");
+      // print("Erreur GLM: $e");
       return null;
     }
   }
