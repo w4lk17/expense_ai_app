@@ -6,8 +6,10 @@ abstract class ExpenseRepository {
   Future<void> addExpense(ExpensesCompanion expense);
   Future<void> updateExpense(Expense expense);
   Future<void> deleteExpense(Expense expense);
-  Future<List<Category>> getAllCategories();
   Future<void> syncExpenses(String userId);
-  Future<String?> suggestCategory(String description);
   Future<String?> analyzeExpenses(String summary);
+  Future<List<Category>> getAllCategories();
+  Future<String?> suggestCategory(String description);
+  Future<void> setBudget(int categoryId, double amount, int month, int year);
+  Future<Map<int, double>> getBudgetsForCurrentMonth();
 }

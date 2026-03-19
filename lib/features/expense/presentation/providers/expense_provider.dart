@@ -65,3 +65,8 @@ final totalMonthProvider = Provider<double>((ref) {
     orElse: () => 0.0,
   );
 });
+
+// Provider pour la liste des budgets (Map<CategoryID, Amount>)
+final budgetsProvider = FutureProvider<Map<int, double>>((ref) async {
+  return ref.watch(expenseRepositoryProvider).getBudgetsForCurrentMonth();
+});

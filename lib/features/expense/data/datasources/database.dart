@@ -195,6 +195,30 @@ class AppDatabase extends _$AppDatabase {
   }
 
   // --- BUDGETS DAO ---
-  Future<int> insertBudget(BudgetsCompanion budget) => into(budgets).insert(budget);
-  Stream<List<Budget>> watchBudgets() => select(budgets).watch();
+  // Récupérer le budget d'une catégorie pour un mois/année précis
+  Future<Budget?> getBudget(int categoryId, int month, int year) {
+    return (select(budgets)
+          ..where((t) => t.categoryId.equals(categoryId) & t.month.equals(month) & t.year.equals(year)))
+        .getSingleOrNull();
+  }
+
+  // Sauvegarder ou mettre à jour un budget (Upsert manuel)
+  Future<void> saveBudget(BudgetsCompanion budget) async {
+    // On regarde si un budget existe déjà pour cette catégorie/mois/année
+    final existing = await getBudget(budget.categoryId.value!, budget.month.value!, budget.year.value!);
+
+    if (existing != null) {
+      // Update
+      await (update(budgets)..where((t) => t.id.equals(existing.id))).write(budget);
+    } else {
+      // Insert
+      await into(budgets).insert(budget);
+    }
+  }
+
+  // Récupérer tous les budgets du mois courant
+  Future<List<Budget>> getCurrentMonthBudgets() async {
+    final now = DateTime.now();
+    return (select(budgets)..where((t) => t.month.equals(now.month) & t.year.equals(now.year))).get();
+  }
 }

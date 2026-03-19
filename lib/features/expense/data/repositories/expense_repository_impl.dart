@@ -1,4 +1,5 @@
 // lib/features/expense/data/repositories/expense_repository_impl.dart
+import 'package:drift/drift.dart';
 import 'package:expense_ai_app/features/ai_advisor/data/services/ai_service_factory.dart';
 import 'package:expense_ai_app/features/expense/data/datasources/database.dart';
 import 'package:expense_ai_app/features/expense/domain/repositories/expense_repository.dart';
@@ -77,5 +78,23 @@ class ExpenseRepositoryImpl implements ExpenseRepository {
   @override
   Future<String?> analyzeExpenses(String summary) async {
     return await _aiService.analyzeExpenses(summary);
+  }
+
+  @override
+  Future<void> setBudget(int categoryId, double amount, int month, int year) async {
+    final budget = BudgetsCompanion.insert(
+      amount: amount,
+      categoryId: Value(categoryId),
+      month: month,
+      year: year,
+    );
+    await _db.saveBudget(budget);
+  }
+
+  @override
+  Future<Map<int, double>> getBudgetsForCurrentMonth() async {
+    final budgets = await _db.getCurrentMonthBudgets();
+    // Convertit la liste en Map <CategoryId, Amount> pour accès rapide
+    return {for (var b in budgets) b.categoryId!: b.amount};
   }
 }
