@@ -11,15 +11,20 @@ import 'features/auth/presentation/providers/auth_provider.dart';
 import 'features/expense/presentation/pages/home_shell.dart';
 
 void main() async {
-  WidgetsFlutterBinding.ensureInitialized();
-  await dotenv.load(fileName: ".env"); 
-  // 1. Initialisation de Supabase
+  ///-- widgets binding pour s'assurer que tout est prêt avant de lancer l'app
+  final widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
+  await dotenv.load(fileName: ".env");
+
+  ///-- Préserver le splash screen jusqu'à ce que tout soit prêt
+  // FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
+
+  ///-- Initialisation de Supabase
   await Supabase.initialize(
     url: SupabaseConstants.supabaseUrl,
     anonKey: SupabaseConstants.supabaseAnonKey,
     debug: true, // Passer à false en production
   );
-  // 2. Lancement de l'application avec Riverpod
+  //-- Lancement de l'application avec Riverpod
   runApp(const ProviderScope(child: MyApp()));
 }
 
