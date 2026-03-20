@@ -304,6 +304,111 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
                         ),
                       ),
                     ),
+                  const SizedBox(height: 32),
+
+                  // 5. GRAPHIQUE D'ÉVOLUTION
+                  Text(
+                    "Évolution des dépenses",
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 16),
+
+                  Consumer(
+                    builder: (context, ref, child) {
+                      final allExpenses = ref.watch(allExpensesProvider);
+                      return allExpenses.when(
+                        data: (expenses) {
+                          final dataMap = _prepareMonthlyData(expenses);
+                          final sortedKeys = dataMap.keys.toList()..sort();
+
+                          if (dataMap.isEmpty) return const SizedBox();
+
+                          return SizedBox(
+                            height: 200,
+                            child: BarChart(
+                              BarChartData(
+                                alignment: BarChartAlignment.spaceAround,
+                                barTouchData: BarTouchData(
+                                  touchTooltipData: BarTouchTooltipData(
+                                    getTooltipColor: (_) => Theme.of(context).colorScheme.inverseSurface,
+                                    tooltipPadding: const EdgeInsets.all(8),
+                                    tooltipMargin: 8,
+                                    getTooltipItem: (group, groupIndex, rod, rodIndex) {
+                                      return BarTooltipItem(
+                                        '${rod.toY.toStringAsFixed(0)} ',
+                                        TextStyle(
+                                          color: Theme.of(context).colorScheme.onInverseSurface,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      );
+                                    },
+                                  ),
+                                ),
+                                titlesData: FlTitlesData(
+                                  leftTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                                  topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                                  rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                                  bottomTitles: AxisTitles(
+                                    sideTitles: SideTitles(
+                                      showTitles: true,
+                                      getTitlesWidget: (value, meta) {
+                                        final int index = value.toInt();
+                                        if (index < 0 || index >= sortedKeys.length) return const Text('');
+
+                                        final String key = sortedKeys[index];
+                                        final parts = key.split('-');
+                                        final month = int.parse(parts[1]);
+                                        final months = [
+                                          'Jan',
+                                          'Fev',
+                                          'Mar',
+                                          'Avr',
+                                          'Mai',
+                                          'Juin',
+                                          'Juil',
+                                          'Aout',
+                                          'Sep',
+                                          'Oct',
+                                          'Nov',
+                                          'Dec',
+                                        ];
+                                        return Padding(
+                                          padding: const EdgeInsets.only(top: 8.0),
+                                          child: Text(months[month - 1], style: const TextStyle(fontSize: 10)),
+                                        );
+                                      },
+                                    ),
+                                  ),
+                                ),
+                                borderData: FlBorderData(show: false),
+                                gridData: const FlGridData(show: false),
+                                barGroups: dataMap.entries.map((entry) {
+                                  final index = sortedKeys.indexOf(entry.key);
+                                  return BarChartGroupData(
+                                    x: index,
+                                    barRods: [
+                                      BarChartRodData(
+                                        toY: entry.value,
+                                        color: Theme.of(context).colorScheme.primary,
+                                        width: 16,
+                                        borderRadius: const BorderRadius.only(
+                                          topLeft: Radius.circular(4),
+                                          topRight: Radius.circular(4),
+                                        ),
+                                      ),
+                                    ],
+                                  );
+                                }).toList(),
+                              ),
+                            ),
+                          );
+                        },
+                        loading: () =>
+                            const SizedBox(height: 200, child: Center(child: CircularProgressIndicator())),
+                        error: (e, s) => Text("Erreur stats: $e"),
+                      );
+                    },
+                  ),
                 ],
               ),
             );
@@ -332,5 +437,28 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
       );
     });
     return sections;
+  }
+
+  // Prépare les données pour les 6 derniers mois
+  Map<String, double> _prepareMonthlyData(List<Expense> expenses) {
+    final now = DateTime.now();
+    final Map<String, double> monthlyTotals = {};
+
+    // Initialiser les 6 derniers mois à 0
+    for (int i = 5; i >= 0; i--) {
+      final monthDate = DateTime(now.year, now.month - i, 1);
+      final key = "${monthDate.year}-${monthDate.month}";
+      monthlyTotals[key] = 0.0;
+    }
+
+    // Remplir avec les dépenses
+    for (var exp in expenses) {
+      final key = "${exp.date.year}-${exp.date.month}";
+      if (monthlyTotals.containsKey(key)) {
+        monthlyTotals[key] = monthlyTotals[key]! + exp.amount;
+      }
+    }
+
+    return monthlyTotals;
   }
 }

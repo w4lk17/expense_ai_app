@@ -97,4 +97,9 @@ class ExpenseRepositoryImpl implements ExpenseRepository {
     // Convertit la liste en Map <CategoryId, Amount> pour accès rapide
     return {for (var b in budgets) b.categoryId!: b.amount};
   }
+
+  @override
+  Future<List<Expense>> getAllExpenses() {
+    return _db.getAllExpensesSimple();
+  }
 }

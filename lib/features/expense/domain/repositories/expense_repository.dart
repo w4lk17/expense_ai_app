@@ -12,4 +12,5 @@ abstract class ExpenseRepository {
   Future<String?> suggestCategory(String description);
   Future<void> setBudget(int categoryId, double amount, int month, int year);
   Future<Map<int, double>> getBudgetsForCurrentMonth();
+  Future<List<Expense>> getAllExpenses();
 }

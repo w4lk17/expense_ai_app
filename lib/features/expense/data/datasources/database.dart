@@ -193,7 +193,12 @@ class AppDatabase extends _$AppDatabase {
       await updateNextRecurrenceDate(expense.id, newNextDate);
     }
   }
-
+// Récupère toutes les dépenses (pour calcul historique)
+  // Note: En prod, on ferait une requête SQL groupée, mais pour 6 mois de données c'est OK.
+  Future<List<Expense>> getAllExpensesSimple() {
+    return select(expenses).get();
+  }
+  
   // --- BUDGETS DAO ---
   // Récupérer le budget d'une catégorie pour un mois/année précis
   Future<Budget?> getBudget(int categoryId, int month, int year) {
@@ -205,7 +210,7 @@ class AppDatabase extends _$AppDatabase {
   // Sauvegarder ou mettre à jour un budget (Upsert manuel)
   Future<void> saveBudget(BudgetsCompanion budget) async {
     // On regarde si un budget existe déjà pour cette catégorie/mois/année
-    final existing = await getBudget(budget.categoryId.value!, budget.month.value!, budget.year.value!);
+    final existing = await getBudget(budget.categoryId.value!, budget.month.value, budget.year.value);
 
     if (existing != null) {
       // Update
@@ -222,3 +227,4 @@ class AppDatabase extends _$AppDatabase {
     return (select(budgets)..where((t) => t.month.equals(now.month) & t.year.equals(now.year))).get();
   }
 }
+

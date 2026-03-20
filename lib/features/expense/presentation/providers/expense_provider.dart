@@ -70,3 +70,7 @@ final totalMonthProvider = Provider<double>((ref) {
 final budgetsProvider = FutureProvider<Map<int, double>>((ref) async {
   return ref.watch(expenseRepositoryProvider).getBudgetsForCurrentMonth();
 });
+
+final allExpensesProvider = FutureProvider<List<Expense>>((ref) async {
+  return ref.watch(expenseRepositoryProvider).getAllExpenses();
+});
