@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:expense_ai_app/core/providers/theme_provider.dart';
 import 'package:expense_ai_app/features/expense/data/datasources/database.dart';
 import 'package:expense_ai_app/features/expense/presentation/pages/budget_settings_page.dart';
@@ -5,6 +7,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:intl/intl.dart';
+import 'package:csv/csv.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:share_plus/share_plus.dart';
 import '../providers/expense_provider.dart';
 import 'package:expense_ai_app/features/ai_advisor/data/services/ai_cache_service.dart';
 
@@ -58,6 +63,37 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
     setState(() => _isLoadingAdvice = false);
   }
 
+  Future<void> _exportToCsv() async {
+    final expensesAsync = ref.read(expenseListProvider);
+    final expenses = expensesAsync.value ?? [];
+
+    if (expenses.isEmpty) {
+      if (mounted)
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Aucune dépense à exporter")));
+      return;
+    }
+
+    // Création manuelle du CSV
+    String csvContent = "Date,Description,Categorie,Montant\n";
+
+    for (var item in expenses) {
+      final exp = item.expense;
+      final cat = item.category?.name ?? "Non classé";
+      // Format: "valeur","valeur"...
+      csvContent +=
+          "${DateFormat('dd/MM/yyyy').format(exp.date)},\"${exp.description ?? ''}\",$cat,${exp.amount}\n";
+    }
+
+    // Sauvegarde et partage
+    final directory = await getApplicationDocumentsDirectory();
+    final now = DateFormat('yyyy-MM-dd').format(DateTime.now());
+    final path = "${directory.path}/depenses_$now.csv";
+    final File file = File(path);
+    await file.writeAsString(csvContent);
+
+    await SharePlus.instance.share(ShareParams(files: [XFile(path)], subject: "Export Dépenses $now"));
+  }
+
   @override
   Widget build(BuildContext context) {
     final expensesByCategory = ref.watch(expensesByCategoryProvider);
@@ -72,6 +108,11 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
       appBar: AppBar(
         title: const Text('Tableau de bord'),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.file_download_outlined), // Icône téléchargement
+            onPressed: _exportToCsv,
+            tooltip: "Exporter en CSV",
+          ),
           IconButton(
             icon: const Icon(Icons.settings_outlined),
             onPressed: () {
