@@ -57,6 +57,7 @@ class ExpenseRepositoryImpl implements ExpenseRepository {
             'is_recurring': expense.isRecurring,
             'recurrence_interval': expense.recurrenceInterval,
             'next_recurrence_date': expense.nextRecurrenceDate?.toIso8601String(),
+            'is_income': expense.isIncome,
           });
 
           // 2. Mise à jour du flag local : C'est crucial pour faire disparaitre l'icône "Cloud Off"

@@ -74,3 +74,50 @@ final budgetsProvider = FutureProvider<Map<int, double>>((ref) async {
 final allExpensesProvider = FutureProvider<List<Expense>>((ref) async {
   return ref.watch(expenseRepositoryProvider).getAllExpenses();
 });
+
+// Provider pour le total des DEPENSES du mois (négatif)
+final totalExpensesMonthProvider = Provider<double>((ref) {
+  final expensesAsync = ref.watch(expenseListProvider);
+  final now = DateTime.now();
+
+  return expensesAsync.maybeWhen(
+    data: (items) {
+      return items
+          .where(
+            (item) =>
+                !item.expense.isIncome && // Seulement les dépenses
+                item.expense.date.month == now.month &&
+                item.expense.date.year == now.year,
+          )
+          .fold(0.0, (sum, item) => sum + item.expense.amount);
+    },
+    orElse: () => 0.0,
+  );
+});
+
+// Provider pour le total des REVENUS du mois (positif)
+final totalIncomeMonthProvider = Provider<double>((ref) {
+  final expensesAsync = ref.watch(expenseListProvider);
+  final now = DateTime.now();
+
+  return expensesAsync.maybeWhen(
+    data: (items) {
+      return items
+          .where(
+            (item) =>
+                item.expense.isIncome && // Seulement les revenus
+                item.expense.date.month == now.month &&
+                item.expense.date.year == now.year,
+          )
+          .fold(0.0, (sum, item) => sum + item.expense.amount);
+    },
+    orElse: () => 0.0,
+  );
+});
+
+// Provider pour le SOLDE NET (Revenus - Dépenses)
+final netBalanceProvider = Provider<double>((ref) {
+  final income = ref.watch(totalIncomeMonthProvider);
+  final expenses = ref.watch(totalExpensesMonthProvider);
+  return income - expenses;
+});

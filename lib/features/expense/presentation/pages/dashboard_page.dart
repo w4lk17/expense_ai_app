@@ -7,7 +7,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:intl/intl.dart';
-import 'package:csv/csv.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 import '../providers/expense_provider.dart';
@@ -68,8 +67,9 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
     final expenses = expensesAsync.value ?? [];
 
     if (expenses.isEmpty) {
-      if (mounted)
+      if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Aucune dépense à exporter")));
+      }
       return;
     }
 
@@ -97,12 +97,19 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
   @override
   Widget build(BuildContext context) {
     final expensesByCategory = ref.watch(expensesByCategoryProvider);
-    final totalMonth = ref.watch(totalMonthProvider);
-    // on reccupere les budgets
-    final budgetsAsync = ref.watch(budgetsProvider);
 
-    final currencyFormat = NumberFormat.currency(locale: 'fr_FR', symbol: ' FCFA');
+    // NOUVEAUX PROVIDERS
+    final totalExpenses = ref.watch(totalExpensesMonthProvider);
+    final totalIncome = ref.watch(totalIncomeMonthProvider);
+    final netBalance = ref.watch(netBalanceProvider); // Revenus - Dépenses
+
+    final budgetsAsync = ref.watch(budgetsProvider);
+    final currencyFormat = NumberFormat.currency(locale: 'fr_FR', symbol: 'FCFA');
     final expensesAsync = ref.watch(expenseListProvider);
+
+    // Calcul du budget (basé sur les dépenses uniquement)
+    _budgetLimit = budgetsAsync.asData?.value.values.fold(0.0, (sum, item) => sum! + item) ?? 0.0;
+    final double progress = _budgetLimit > 0 ? (totalExpenses / _budgetLimit) : 0.0;
 
     return Scaffold(
       appBar: AppBar(
@@ -128,335 +135,365 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
         ],
       ),
       body: expensesAsync.when(
-        data: (_) => budgetsAsync.when(
-          // On imbrique la vérification des budgets
-          data: (budgetsMap) {
-            // Calcul du budget total (somme de tous les budgets définis)
-            _budgetLimit = budgetsMap.values.fold(0.0, (sum, item) => sum + item);
+        data: (_) => SingleChildScrollView(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              /// 1. CARTE PRINCIPALE (SOLDE NET)
+              Card(
+                elevation: 0,
+                color: netBalance >= 0
+                    ? Colors
+                          .green
+                          .shade100 // Vert si positif
+                    : Colors.red.shade100, // Rouge si négatif
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+                child: Padding(
+                  padding: const EdgeInsets.all(24),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        "Solde du mois",
+                        style: TextStyle(
+                          color: netBalance >= 0 ? Colors.green.shade900 : Colors.red.shade900,
+                          fontSize: 16,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        currencyFormat.format(netBalance),
+                        style: TextStyle(
+                          color: netBalance >= 0 ? Colors.green.shade900 : Colors.red.shade900,
+                          fontSize: 40,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 24),
 
-            // Calcul de la progression
-            final double progress = _budgetLimit > 0 ? (totalMonth / _budgetLimit) : 0.0;
-
-            return SingleChildScrollView(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // 1. CARTE TOTALE (Dynamique)
-                  Card(
-                    elevation: 0,
-                    color: Theme.of(context).colorScheme.primaryContainer,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-                    child: Padding(
-                      padding: const EdgeInsets.all(24),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                      // Ligne des détails (Revenus / Dépenses)
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
+                          // Revenus
                           Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Text(
-                                "Solde du mois",
-                                style: TextStyle(
-                                  color: Theme.of(context).colorScheme.onPrimaryContainer.withValues(alpha: 0.8),
-                                  fontSize: 16,
-                                ),
-                              ),
-                              if (_budgetLimit == 0)
-                                Text(
-                                  "Pas de budget défini",
-                                  style: TextStyle(fontSize: 10, color: Theme.of(context).colorScheme.error),
-                                ),
+                              Icon(Icons.arrow_downward, color: Colors.green.shade700, size: 16),
+                              const SizedBox(width: 4),
+                              Text("Revenus", style: TextStyle(color: Colors.green.shade700)),
                             ],
                           ),
-                          const SizedBox(height: 8),
                           Text(
-                            currencyFormat.format(totalMonth),
+                            currencyFormat.format(totalIncome),
+                            style: TextStyle(color: Colors.green.shade700, fontWeight: FontWeight.bold),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+
+                      // Dépenses
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Row(
+                            children: [
+                              Icon(Icons.arrow_upward, color: Colors.red.shade700, size: 16),
+                              const SizedBox(width: 4),
+                              Text("Dépenses", style: TextStyle(color: Colors.red.shade700)),
+                            ],
+                          ),
+                          Text(
+                            currencyFormat.format(totalExpenses),
+                            style: TextStyle(color: Colors.red.shade700, fontWeight: FontWeight.bold),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+
+              /// 2. CARTE BUDGET (Dépenses vs Budget)
+              if (_budgetLimit > 0)
+                Card(
+                  elevation: 0,
+                  color: Theme.of(context).colorScheme.primaryContainer,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+                  child: Padding(
+                    padding: const EdgeInsets.all(24),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              "Budget Dépenses",
+                              style: TextStyle(color: Theme.of(context).colorScheme.onPrimaryContainer),
+                            ),
+                            Text(
+                              currencyFormat.format(_budgetLimit),
+                              style: TextStyle(
+                                color: Theme.of(context).colorScheme.onPrimaryContainer,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 16),
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(4),
+                          child: LinearProgressIndicator(
+                            value: progress.clamp(0.0, 1.0),
+                            backgroundColor: Theme.of(
+                              context,
+                            ).colorScheme.onPrimaryContainer.withValues(alpha: 0.1),
+                            color: progress >= 1.0 ? Colors.red : Theme.of(context).colorScheme.onPrimaryContainer,
+                            minHeight: 6,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          progress >= 1.0
+                              ? "Budget dépassé !"
+                              : "Reste: ${currencyFormat.format(_budgetLimit - totalExpenses)}",
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Theme.of(context).colorScheme.onPrimaryContainer.withValues(alpha: 0.7),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                )
+              else
+                // -- Pas de Budget Defini (Call to Action) ---
+                GestureDetector(
+                  onTap: () {
+                    // Redirection vers la page de setup
+                    Navigator.push(context, MaterialPageRoute(builder: (_) => const BudgetSettingsPage()));
+                  },
+                  child: Card(
+                    elevation: 0,
+                    color: Theme.of(context).colorScheme.surfaceContainerHighest,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(24),
+                      side: BorderSide(
+                        color: Theme.of(context).colorScheme.outlineVariant,
+                        width: 2,
+                        style: BorderStyle.solid,
+                      ),
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.all(24),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(Icons.add_circle_outline, color: Theme.of(context).colorScheme.primary),
+                          const SizedBox(width: 12),
+                          Text(
+                            "Définir mon budget mensuel",
                             style: TextStyle(
-                              color: Theme.of(context).colorScheme.onPrimaryContainer,
-                              fontSize: 40,
+                              color: Theme.of(context).colorScheme.primary,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
-                          const SizedBox(height: 16),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              const SizedBox(height: 32),
 
-                          // NOUVEAU : Affichage du budget total défini
-                          if (_budgetLimit > 0)
-                            Padding(
-                              padding: const EdgeInsets.only(bottom: 8.0),
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Text(
-                                    "Budget Total",
-                                    style: TextStyle(
-                                      color: Theme.of(
-                                        context,
-                                      ).colorScheme.onPrimaryContainer.withValues(alpha: 0.7),
-                                      fontSize: 12,
-                                    ),
-                                  ),
-                                  Text(
-                                    currencyFormat.format(_budgetLimit),
-                                    style: TextStyle(
-                                      color: Theme.of(
-                                        context,
-                                      ).colorScheme.onPrimaryContainer.withValues(alpha: 0.7),
-                                      fontSize: 12,
+              /// 3. CARTE ANALYSE IA
+              Card(
+                elevation: 0,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                  side: BorderSide(color: Theme.of(context).colorScheme.outlineVariant),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Icon(Icons.auto_awesome, color: Theme.of(context).colorScheme.secondary),
+                          const SizedBox(width: 8),
+                          Text(
+                            "Conseil de l'IA",
+                            style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 12),
+                      if (_isLoadingAdvice)
+                        const Center(child: CircularProgressIndicator())
+                      else if (_aiAdvice != null)
+                        Text(_aiAdvice!, style: Theme.of(context).textTheme.bodyMedium)
+                      else
+                        Text(
+                          "Obtenez une analyse personnalisée de vos dépenses.",
+                          style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant),
+                        ),
+                      const SizedBox(height: 16),
+                      Center(
+                        child: ElevatedButton.icon(
+                          onPressed: _getAnalysis,
+                          icon: const Icon(Icons.analytics),
+                          label: const Text("Analyser mon mois"),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Theme.of(context).colorScheme.primary,
+                            foregroundColor: Colors.white,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: 32),
+
+              // 4. GRAPHIQUE
+              Text(
+                "Répartition par catégorie",
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 16),
+
+              if (expensesByCategory.isEmpty)
+                SizedBox(
+                  height: 200,
+                  child: Center(
+                    child: Text(
+                      "Aucune dépense ce mois-ci",
+                      style: TextStyle(color: Theme.of(context).colorScheme.outline),
+                    ),
+                  ),
+                )
+              else
+                SizedBox(
+                  height: 250,
+                  child: PieChart(
+                    PieChartData(
+                      sectionsSpace: 4,
+                      centerSpaceRadius: 40,
+                      sections: showingSections(expensesByCategory),
+                    ),
+                  ),
+                ),
+              const SizedBox(height: 32),
+
+              // 5. GRAPHIQUE D'ÉVOLUTION
+              Text(
+                "Évolution des dépenses",
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 16),
+
+              Consumer(
+                builder: (context, ref, child) {
+                  final allExpenses = ref.watch(allExpensesProvider);
+                  return allExpenses.when(
+                    data: (expenses) {
+                      final dataMap = _prepareMonthlyData(expenses);
+                      final sortedKeys = dataMap.keys.toList()..sort();
+
+                      if (dataMap.isEmpty) return const SizedBox();
+
+                      return SizedBox(
+                        height: 200,
+                        child: BarChart(
+                          BarChartData(
+                            alignment: BarChartAlignment.spaceAround,
+                            barTouchData: BarTouchData(
+                              touchTooltipData: BarTouchTooltipData(
+                                getTooltipColor: (_) => Theme.of(context).colorScheme.inverseSurface,
+                                tooltipPadding: const EdgeInsets.all(8),
+                                tooltipMargin: 8,
+                                getTooltipItem: (group, groupIndex, rod, rodIndex) {
+                                  return BarTooltipItem(
+                                    '${rod.toY.toStringAsFixed(0)} ',
+                                    TextStyle(
+                                      color: Theme.of(context).colorScheme.onInverseSurface,
                                       fontWeight: FontWeight.bold,
+                                    ),
+                                  );
+                                },
+                              ),
+                            ),
+                            titlesData: FlTitlesData(
+                              leftTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                              topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                              rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                              bottomTitles: AxisTitles(
+                                sideTitles: SideTitles(
+                                  showTitles: true,
+                                  getTitlesWidget: (value, meta) {
+                                    final int index = value.toInt();
+                                    if (index < 0 || index >= sortedKeys.length) return const Text('');
+
+                                    final String key = sortedKeys[index];
+                                    final parts = key.split('-');
+                                    final month = int.parse(parts[1]);
+                                    final months = [
+                                      'Jan',
+                                      'Fev',
+                                      'Mar',
+                                      'Avr',
+                                      'Mai',
+                                      'Juin',
+                                      'Juil',
+                                      'Aout',
+                                      'Sep',
+                                      'Oct',
+                                      'Nov',
+                                      'Dec',
+                                    ];
+                                    return Padding(
+                                      padding: const EdgeInsets.only(top: 8.0),
+                                      child: Text(months[month - 1], style: const TextStyle(fontSize: 10)),
+                                    );
+                                  },
+                                ),
+                              ),
+                            ),
+                            borderData: FlBorderData(show: false),
+                            gridData: const FlGridData(show: false),
+                            barGroups: dataMap.entries.map((entry) {
+                              final index = sortedKeys.indexOf(entry.key);
+                              return BarChartGroupData(
+                                x: index,
+                                barRods: [
+                                  BarChartRodData(
+                                    toY: entry.value,
+                                    color: Theme.of(context).colorScheme.primary,
+                                    width: 16,
+                                    borderRadius: const BorderRadius.only(
+                                      topLeft: Radius.circular(4),
+                                      topRight: Radius.circular(4),
                                     ),
                                   ),
                                 ],
-                              ),
-                            ),
-                          if (_budgetLimit > 0) ...[
-                            // Afficher la barre seulement si un budget existe
-                            const SizedBox(height: 16),
-                            ClipRRect(
-                              borderRadius: BorderRadius.circular(4),
-                              child: LinearProgressIndicator(
-                                value: progress.clamp(0.0, 1.0),
-                                backgroundColor: Theme.of(
-                                  context,
-                                ).colorScheme.onPrimaryContainer.withValues(alpha: 0.1),
-                                color: progress >= 1.0
-                                    ? Colors.red.shade700
-                                    : Theme.of(context).colorScheme.onPrimaryContainer,
-                                minHeight: 6,
-                              ),
-                            ),
-                            const SizedBox(height: 8),
-                            Text(
-                              progress >= 1.0
-                                  ? "Budget dépassé ! (${currencyFormat.format(totalMonth - _budgetLimit)} de trop)"
-                                  : "Reste à dépenser: ${currencyFormat.format(_budgetLimit - totalMonth)}",
-                              style: TextStyle(
-                                fontSize: 12,
-                                color: Theme.of(context).colorScheme.onPrimaryContainer.withValues(alpha: 0.6),
-                              ),
-                            ),
-                          ],
-                        ],
-                      ),
-                    ),
-                  ),
-
-                  // 2. ALERTE BUDGET
-                  if (_budgetLimit > 0 && totalMonth > _budgetLimit)
-                    Card(
-                      margin: const EdgeInsets.only(top: 16, bottom: 16),
-                      color: Colors.red.shade100,
-                      child: Padding(
-                        padding: const EdgeInsets.all(16.0),
-                        child: Row(
-                          children: [
-                            const Icon(Icons.warning_amber, color: Colors.red),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: Text(
-                                "Attention ! Vous avez dépassé votre budget mensuel ($_budgetLimit FCFA).",
-                                style: TextStyle(color: Colors.red.shade900),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    )
-                  else
-                    const SizedBox(height: 16),
-                  // 3. CARTE ANALYSE IA
-                  Card(
-                    elevation: 0,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16),
-                      side: BorderSide(color: Theme.of(context).colorScheme.outlineVariant),
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            children: [
-                              Icon(Icons.auto_awesome, color: Theme.of(context).colorScheme.secondary),
-                              const SizedBox(width: 8),
-                              Text(
-                                "Conseil de l'IA",
-                                style: Theme.of(
-                                  context,
-                                ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
-                              ),
-                            ],
+                              );
+                            }).toList(),
                           ),
-                          const SizedBox(height: 12),
-                          if (_isLoadingAdvice)
-                            const Center(child: CircularProgressIndicator())
-                          else if (_aiAdvice != null)
-                            Text(_aiAdvice!, style: Theme.of(context).textTheme.bodyMedium)
-                          else
-                            Text(
-                              "Obtenez une analyse personnalisée de vos dépenses.",
-                              style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant),
-                            ),
-                          const SizedBox(height: 16),
-                          Center(
-                            child: ElevatedButton.icon(
-                              onPressed: _getAnalysis,
-                              icon: const Icon(Icons.analytics),
-                              label: const Text("Analyser mon mois"),
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Theme.of(context).colorScheme.primary,
-                                foregroundColor: Colors.white,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-
-                  const SizedBox(height: 32),
-
-                  // 4. GRAPHIQUE
-                  Text(
-                    "Répartition par catégorie",
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
-                  ),
-                  const SizedBox(height: 16),
-
-                  if (expensesByCategory.isEmpty)
-                    SizedBox(
-                      height: 200,
-                      child: Center(
-                        child: Text(
-                          "Aucune dépense ce mois-ci",
-                          style: TextStyle(color: Theme.of(context).colorScheme.outline),
                         ),
-                      ),
-                    )
-                  else
-                    SizedBox(
-                      height: 250,
-                      child: PieChart(
-                        PieChartData(
-                          sectionsSpace: 4,
-                          centerSpaceRadius: 40,
-                          sections: showingSections(expensesByCategory),
-                        ),
-                      ),
-                    ),
-                  const SizedBox(height: 32),
-
-                  // 5. GRAPHIQUE D'ÉVOLUTION
-                  Text(
-                    "Évolution des dépenses",
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
-                  ),
-                  const SizedBox(height: 16),
-
-                  Consumer(
-                    builder: (context, ref, child) {
-                      final allExpenses = ref.watch(allExpensesProvider);
-                      return allExpenses.when(
-                        data: (expenses) {
-                          final dataMap = _prepareMonthlyData(expenses);
-                          final sortedKeys = dataMap.keys.toList()..sort();
-
-                          if (dataMap.isEmpty) return const SizedBox();
-
-                          return SizedBox(
-                            height: 200,
-                            child: BarChart(
-                              BarChartData(
-                                alignment: BarChartAlignment.spaceAround,
-                                barTouchData: BarTouchData(
-                                  touchTooltipData: BarTouchTooltipData(
-                                    getTooltipColor: (_) => Theme.of(context).colorScheme.inverseSurface,
-                                    tooltipPadding: const EdgeInsets.all(8),
-                                    tooltipMargin: 8,
-                                    getTooltipItem: (group, groupIndex, rod, rodIndex) {
-                                      return BarTooltipItem(
-                                        '${rod.toY.toStringAsFixed(0)} ',
-                                        TextStyle(
-                                          color: Theme.of(context).colorScheme.onInverseSurface,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      );
-                                    },
-                                  ),
-                                ),
-                                titlesData: FlTitlesData(
-                                  leftTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                                  topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                                  rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                                  bottomTitles: AxisTitles(
-                                    sideTitles: SideTitles(
-                                      showTitles: true,
-                                      getTitlesWidget: (value, meta) {
-                                        final int index = value.toInt();
-                                        if (index < 0 || index >= sortedKeys.length) return const Text('');
-
-                                        final String key = sortedKeys[index];
-                                        final parts = key.split('-');
-                                        final month = int.parse(parts[1]);
-                                        final months = [
-                                          'Jan',
-                                          'Fev',
-                                          'Mar',
-                                          'Avr',
-                                          'Mai',
-                                          'Juin',
-                                          'Juil',
-                                          'Aout',
-                                          'Sep',
-                                          'Oct',
-                                          'Nov',
-                                          'Dec',
-                                        ];
-                                        return Padding(
-                                          padding: const EdgeInsets.only(top: 8.0),
-                                          child: Text(months[month - 1], style: const TextStyle(fontSize: 10)),
-                                        );
-                                      },
-                                    ),
-                                  ),
-                                ),
-                                borderData: FlBorderData(show: false),
-                                gridData: const FlGridData(show: false),
-                                barGroups: dataMap.entries.map((entry) {
-                                  final index = sortedKeys.indexOf(entry.key);
-                                  return BarChartGroupData(
-                                    x: index,
-                                    barRods: [
-                                      BarChartRodData(
-                                        toY: entry.value,
-                                        color: Theme.of(context).colorScheme.primary,
-                                        width: 16,
-                                        borderRadius: const BorderRadius.only(
-                                          topLeft: Radius.circular(4),
-                                          topRight: Radius.circular(4),
-                                        ),
-                                      ),
-                                    ],
-                                  );
-                                }).toList(),
-                              ),
-                            ),
-                          );
-                        },
-                        loading: () =>
-                            const SizedBox(height: 200, child: Center(child: CircularProgressIndicator())),
-                        error: (e, s) => Text("Erreur stats: $e"),
                       );
                     },
-                  ),
-                ],
+                    loading: () => const SizedBox(height: 200, child: Center(child: CircularProgressIndicator())),
+                    error: (e, s) => Text("Erreur stats: $e"),
+                  );
+                },
               ),
-            );
-          },
-          loading: () => const Center(child: CircularProgressIndicator()),
-          error: (e, s) => Center(child: Text("Erreur budgets: $e")),
+            ],
+          ),
         ),
+
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (err, stack) => Center(child: Text('Erreur: $err')),
       ),

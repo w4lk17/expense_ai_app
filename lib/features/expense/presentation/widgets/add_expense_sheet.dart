@@ -24,6 +24,7 @@ class _AddExpenseSheetState extends ConsumerState<AddExpenseSheet> {
   Category? _selectedCategory;
   bool get isEditing => widget.expenseToEdit != null;
   bool _isRecurring = false;
+  bool _isIncome = false; // Par défaut c'est une dépense
 
   @override
   void initState() {
@@ -75,6 +76,7 @@ class _AddExpenseSheetState extends ConsumerState<AddExpenseSheet> {
           // Champs optionnels (wrappés)
           description: drift.Value(_descController.text),
           categoryId: drift.Value(_selectedCategory?.id),
+          isIncome: drift.Value(_isIncome),
           isRecurring: drift.Value(_isRecurring),
           nextRecurrenceDate: drift.Value(nextRecurrence), // Sera null si pas récurrent
         );
@@ -152,6 +154,22 @@ class _AddExpenseSheetState extends ConsumerState<AddExpenseSheet> {
               style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 16),
+            // TOGGLE DEPENSE / REVENU
+            Center(
+              child: SegmentedButton<bool>(
+                selected: {_isIncome},
+                onSelectionChanged: (Set<bool> newSelection) {
+                  setState(() {
+                    _isIncome = newSelection.first;
+                  });
+                },
+                segments: const [
+                  ButtonSegment(value: false, label: Text('Dépense'), icon: Icon(Icons.arrow_downward)),
+                  ButtonSegment(value: true, label: Text('Revenu'), icon: Icon(Icons.arrow_upward)),
+                ],
+              ),
+            ),
+            const SizedBox(height: 20),
             TextFormField(
               controller: _amountController,
               decoration: const InputDecoration(labelText: 'Montant', prefixIcon: Icon(Icons.euro)),

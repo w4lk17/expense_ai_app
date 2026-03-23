@@ -43,7 +43,10 @@ class _BudgetSettingsPageState extends ConsumerState<BudgetSettingsPage> {
 
     setState(() => _isLoading = false);
 
-    if (mounted) Navigator.pop(context);
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Budgets mis à jour !")));
+      Navigator.pop(context);
+    }
   }
 
   @override
@@ -54,7 +57,25 @@ class _BudgetSettingsPageState extends ConsumerState<BudgetSettingsPage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text("Définir mes budgets"),
-        actions: [TextButton(onPressed: _isLoading ? null : _saveAll, child: const Text("Enregistrer"))],
+        actions: [
+          // Bouton Reset (Icône)
+          IconButton(
+            onPressed: () {
+              for (var controller in _controllers.values) {
+                controller.text = "0";
+              }
+              setState(() {});
+            },
+            icon: const Icon(Icons.refresh), // Icône de rafraîchissement
+            tooltip: "Réinitialiser à zéro", // Infobulle au long appui
+          ),
+          // Bouton Enregistrer (Icône)
+          IconButton(
+            onPressed: _isLoading ? null : _saveAll,
+            icon: const Icon(Icons.save), // Icône de validation
+            tooltip: "Enregistrer",
+          ),
+        ],
       ),
       body: categoriesAsync.when(
         data: (categories) {

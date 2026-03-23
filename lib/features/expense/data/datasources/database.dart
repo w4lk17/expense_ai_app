@@ -23,6 +23,7 @@ class Expenses extends Table {
   DateTimeColumn get date => dateTime()();
   TextColumn get paymentMethod => text().nullable()();
   BoolColumn get isRecurring => boolean().withDefault(const Constant(false))();
+  BoolColumn get isIncome => boolean().withDefault(const Constant(false))();
   TextColumn get recurrenceInterval =>
       text().nullable().withDefault(const Constant('monthly'))(); // 'monthly', 'weekly'
   DateTimeColumn get nextRecurrenceDate => dateTime().nullable()(); // Date de la prochaine génération
@@ -55,7 +56,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase([QueryExecutor? executor]) : super(executor ?? openConnection());
 
   @override
-  int get schemaVersion => 3; // INCREMENTATION (on passe de 2 à 3)
+  int get schemaVersion => 4;
 
   // --- SEED DATA (Mission 2) ---
   // Peuple la base avec des catégories par défaut si vide
@@ -105,11 +106,16 @@ class AppDatabase extends _$AppDatabase {
         if (from < 2) {
           await m.createTable(budgets);
         }
+        // Étape 2 -> 3 (Récurrents) - On garde ce bloc
         if (from < 3) {
-          // Ajout des colonnes récurrentes
           await m.addColumn(expenses, expenses.isRecurring);
           await m.addColumn(expenses, expenses.recurrenceInterval);
           await m.addColumn(expenses, expenses.nextRecurrenceDate);
+        }
+
+        // Étape 3 -> 4 (Revenus) - C'est le NOUVEAU bloc
+        if (from < 4) {
+          await m.addColumn(expenses, expenses.isIncome);
         }
       },
     );
@@ -193,12 +199,13 @@ class AppDatabase extends _$AppDatabase {
       await updateNextRecurrenceDate(expense.id, newNextDate);
     }
   }
-// Récupère toutes les dépenses (pour calcul historique)
+
+  // Récupère toutes les dépenses (pour calcul historique)
   // Note: En prod, on ferait une requête SQL groupée, mais pour 6 mois de données c'est OK.
   Future<List<Expense>> getAllExpensesSimple() {
     return select(expenses).get();
   }
-  
+
   // --- BUDGETS DAO ---
   // Récupérer le budget d'une catégorie pour un mois/année précis
   Future<Budget?> getBudget(int categoryId, int month, int year) {
@@ -227,4 +234,3 @@ class AppDatabase extends _$AppDatabase {
     return (select(budgets)..where((t) => t.month.equals(now.month) & t.year.equals(now.year))).get();
   }
 }
-

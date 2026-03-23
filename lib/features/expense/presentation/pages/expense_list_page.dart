@@ -153,7 +153,10 @@ class _ExpenseListPageState extends ConsumerState<ExpenseListPage> {
                     ),
                     trailing: Text(
                       currencyFormat.format(expense.amount),
-                      style: const TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
+                      style: TextStyle(
+                        color: expense.isIncome ? Colors.blue : Colors.red,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
                 ),
