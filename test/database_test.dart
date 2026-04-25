@@ -30,11 +30,17 @@ void main() {
     test('CRUD: On peut insérer et lire une dépense', () async {
       // 1. Récupérer une catégorie (nécessaire pour la clé étrangère)
       final categories = await db.getAllCategories();
-      final alimentation = categories.firstWhere((c) => c.name == 'Alimentation');
+      final alimentation = categories.firstWhere(
+        (c) => c.name == 'Alimentation',
+      );
 
       // 2. Insérer une dépense
       final expenseId = await db.insertExpense(
-        ExpensesCompanion.insert(amount: Value(15.50).value, categoryId: Value(alimentation.id), date: DateTime.now()),
+        ExpensesCompanion.insert(
+          amount: Value(15.50).value,
+          categoryId: Value(alimentation.id),
+          date: DateTime.now(),
+        ),
       );
 
       // 3. Vérifier l'ID retourné

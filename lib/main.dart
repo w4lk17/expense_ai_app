@@ -12,7 +12,7 @@ import 'features/expense/presentation/pages/home_shell.dart';
 
 void main() async {
   ///-- widgets binding pour s'assurer que tout est prêt avant de lancer l'app
-  final widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
+  WidgetsFlutterBinding.ensureInitialized();
   await dotenv.load(fileName: ".env");
 
   ///-- Préserver le splash screen jusqu'à ce que tout soit prêt

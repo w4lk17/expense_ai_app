@@ -1,13 +1,33 @@
-// lib/core/constants/api_keys.dart
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
-// Configuration active : Choisis quel service utiliser ici
 enum AiProvider { gemini, glm, mock }
 
-const AiProvider activeAiProvider = AiProvider.gemini; // Change ici pour switcher
+const AiProvider defaultAiProvider = AiProvider.gemini;
+const String defaultGlmBaseUrl = 'https://open.bigmodel.cn/api/paas/v4/';
+const String defaultGlmModel = 'glm-4';
 
-// Clés API
-const String glmApiKey = 'TA_CLE_GLM_ICI'; // Souvent appelée API Key Zhipu AI
+String get glmApiKey => _optionalEnv('GLM_API_KEY');
 
-// Configuration GLM (Endpoint spécifique si nécessaire)
-const String glmBaseUrl = "https://open.bigmodel.cn/api/paas/v4/"; // URL standard GLM-4
-const String glmModel = "glm-4"; // ou "glm-3-turbo"
+String get glmBaseUrl =>
+    _optionalEnv('GLM_BASE_URL', fallback: defaultGlmBaseUrl);
+
+String get glmModel => _optionalEnv('GLM_MODEL', fallback: defaultGlmModel);
+
+String aiProviderLabel(AiProvider provider) {
+  switch (provider) {
+    case AiProvider.gemini:
+      return 'Gemini';
+    case AiProvider.glm:
+      return 'GLM';
+    case AiProvider.mock:
+      return 'Mock';
+  }
+}
+
+String _optionalEnv(String key, {String fallback = ''}) {
+  final value = dotenv.env[key]?.trim();
+  if (value == null || value.isEmpty) {
+    return fallback;
+  }
+  return value;
+}

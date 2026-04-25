@@ -1,22 +1,22 @@
 import 'package:expense_ai_app/core/constants/api_keys.dart';
-import '../../domain/services/ai_service.dart';
-import 'glm_service.dart';
-import 'gemini_service.dart';
 
-// Cette classe agit comme un "Provider" de service
+import '../../domain/services/ai_service.dart';
+import 'gemini_service.dart';
+import 'glm_service.dart';
+
 class OpenAIService implements AiService {
   late final AiService _activeService;
 
-  OpenAIService() {
-    switch (activeAiProvider) {
+  OpenAIService({AiProvider provider = defaultAiProvider}) {
+    switch (provider) {
       case AiProvider.gemini:
         _activeService = GeminiService();
         break;
       case AiProvider.glm:
         _activeService = GLMService();
         break;
-      default:
-        _activeService = MockService(); // On garde le mock en fallback
+      case AiProvider.mock:
+        _activeService = MockService();
         break;
     }
   }
@@ -32,7 +32,6 @@ class OpenAIService implements AiService {
   }
 }
 
-// On déplace le Mock ici pour la fallback
 class MockService implements AiService {
   @override
   Future<String?> suggestCategory(String inputText) async {
@@ -42,9 +41,11 @@ class MockService implements AiService {
     return 'Autre';
   }
 
-    @override
+  @override
   Future<String?> analyzeExpenses(String expenseSummary) async {
     await Future.delayed(const Duration(seconds: 1));
-    return "Analyse simulée : \n\n✅ Point fort : Vous dépensez peu en transport.\n⚠️ À surveiller : Vos dépenses en loisirs sont élevées ce mois-ci.";
+    return "Summary: Spending looks stable overall this month.\n"
+        "Watch: Leisure is rising faster than essentials.\n"
+        "Next: Set a cap there for the remaining days.";
   }
 }

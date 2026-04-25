@@ -1,95 +1,139 @@
-# Expense AI 💸
+# Expense AI 2.0
 
-Application mobile de gestion de dépenses personnelles intelligente, basée sur une architecture "Offline First" et propulsée par l'IA.
+Expense AI is an offline-first personal finance app built with Flutter. Version 2.0 turns the project from a simple CRUD expense tracker into a calmer financial companion focused on clarity, pacing, and practical next steps.
 
-## Table des matières
+## What changed in 2.0
 
-- [🚀 Fonctionnalités (MVP v0.1.0)](#-fonctionnalités-mvp-v010)
-- [🏗️ Architecture & Stack Technique](#️-architecture--stack-technique)
-- [🛠️ Installation](#️-installation)
-- [📅 Roadmap](#-roadmap)
-- [👤 Auteur](#-auteur)
+- A redesigned 4-tab experience: `Home`, `Activity`, `Plan`, `Profile`
+- A premium calm visual language with cleaner hierarchy and softer finance-focused colors
+- `Safe to spend` as the primary monthly metric
+- Searchable, filterable activity history with grouping by recency
+- A planning space for budgets, recurring bills, and monthly pacing
+- Embedded AI assistance for category suggestion and concise monthly insight
+- Runtime secret loading through `.env` instead of hardcoded credentials
 
-## 🚀 Fonctionnalités (MVP v0.1.0)
+## Core experience
 
-- **Gestion des Dépenses** : Création, modification, suppression et liste des dépenses.
-- **Catégories** : Organisation par catégories avec icônes et couleurs.
-- **Tableau de Bord** : Visualisation des dépenses du mois et répartition par catégorie (Graphique Camembert).
-- **Authentification** : Inscription et connexion via Supabase (Email/Password).
-- **Mode Offline First** : Fonctionne intégralement sans connexion internet. Les données sont stockées localement sur l'appareil.
-- **Synchronisation Cloud** : Synchronisation automatique des données locales vers Supabase dès que la connexion est rétablie.
-- **Dépenses Récurrentes** : Gestion des charges fixes (Loyer, Abonnements) avec génération automatique mensuelle.
-- **Indicateur de Sync** : Badge visuel indiquant si une dépense est sauvegardée en local ou synchronisée dans le cloud.
+### Home
+- Monthly snapshot with income, expenses, budget usage, and days left
+- Safe-to-spend hero card
+- Quick actions for adding expense or income
+- AI-generated monthly insight
+- Top categories, upcoming recurring bills, and spending trend overview
 
-## 🏗️ Architecture & Stack Technique
+### Activity
+- Search and quick filters for date, category, type, and sync state
+- Transactions grouped into `Today`, `Yesterday`, `This week`, and `Earlier`
+- Swipe actions for duplicate and delete
+- Fast edit flow from the transaction list
 
-Ce projet suit les principes de la Clean Architecture pour une maintenabilité maximale.
+### Plan
+- Category budget monitoring
+- Recurring obligations view
+- Safe-to-spend planning summary
+- Budget editing flow for the current month
 
-### Stack Technique
+### Profile
+- Sync status and account overview
+- Theme switching
+- AI provider selection
+- CSV export
 
-| Composant              | Technologie                          |
-|------------------------|--------------------------------------|
-| Framework              | Flutter (Cross-platform)             |
-| Langage                | Dart                                 |
-| State Management       | Riverpod 2.0+                        |
-| Base de Données Locale | Drift (SQLite) (Offline First)       |
-| Backend (BaaS)         | Supabase (Auth, DB Postgres)         |
-| Graphiques             | FL Chart                             |
+## Product highlights
 
-### Structure des dossiers
+- Offline-first local storage with Drift and SQLite
+- Supabase authentication and cloud sync support
+- Budget tracking by category and month
+- Recurring expense handling
+- Income and expense tracking in the same flow
+- CSV export for sharing or backup
+- Optional AI assistance that does not block core usage
 
-```Text
+## Tech stack
+
+| Area | Technology |
+| --- | --- |
+| App framework | Flutter |
+| Language | Dart |
+| State management | Riverpod |
+| Local database | Drift + SQLite |
+| Backend | Supabase |
+| Charts | FL Chart |
+| Local config | flutter_dotenv |
+
+## Project structure
+
+```text
 lib/
-├── core/          # Couche transverse (Themes, Constants, DB connection)
+├── core/          # Shared theme, config, providers, database connection
 ├── features/
-│   ├── auth/      # Fonctionnalité Authentification
-│   │   ├── data/      # Repositories Impl, Datasources
-│   │   ├── domain/    # Entités, Repository Contracts
-│   │   └── presentation/  # Providers, Pages, Widgets
-│   ├── expense/   # Fonctionnalité Dépenses (CRUD, Dashboard)
-│   └── ai_advisor/  # (Phase 3) Fonctionnalité IA
+│   ├── auth/      # Login and session management
+│   ├── expense/   # Home, activity, planning, budget, transaction flows
+│   └── ai_advisor/# AI services and provider settings
 └── main.dart
 ```
 
-## 🛠️ Installation
+## Setup
 
-1. **Cloner le repo**
+1. Clone the repository.
 
    ```bash
-   git clone <url-du-repo>
+   git clone <repo-url>
    cd expense_ai_app
    ```
 
-2. **Installer les dépendances**
+2. Install dependencies.
 
    ```bash
    flutter pub get
    ```
 
-3. **Générer le code Drift (SQLite)**
+3. Create your local environment file from the example.
+
+   ```bash
+   cp .env.example .env
+   ```
+
+4. Fill `.env` with your runtime values.
+
+   Required keys:
+
+   ```env
+   SUPABASE_URL=
+   SUPABASE_ANON_KEY=
+   GEMINI_API_KEY=
+   GLM_API_KEY=
+   GLM_BASE_URL=
+   GLM_MODEL=
+   ```
+
+5. Generate Drift files if needed.
 
    ```bash
    flutter pub run build_runner build --delete-conflicting-outputs
    ```
 
-4. **Configuration Supabase**
-   - Créer un projet sur [Supabase](https://supabase.com/).
-   - Exécuter le script SQL fourni dans la documentation pour créer les tables `expenses` et activer RLS.
-   - Renseigner vos clés dans `lib/core/constants/supabase_constants.dart`.
-
-5. **Lancer l'application**
+6. Run the app.
 
    ```bash
    flutter run
    ```
 
-## 📅 Roadmap
+## Environment and secrets
 
-- [x] Phase 1 : Architecture & Setup
-- [x] Phase 2 : MVP Fonctionnel (CRUD, Dashboard, Auth, Sync, Récurrents)
-- [ ] Phase 3 : Intégration IA (Catégorisation automatique, Chatbot Conseiller)
-- [ ] Phase 4 : Polish & Release (Dark Mode, Anims, Stores)
+- `.env` is required for local development
+- `.env.example` documents the expected keys
+- `.env` is intentionally ignored by git
+- Supabase and AI secrets should never be committed to Dart source files
 
-## 👤 Auteur
+If secrets were previously committed, rotate them before production use.
 
-Projet développé en autonomie avec l'assistance d'une IA Chef de Projet.
+## Notes for contributors
+
+- The app initializes dotenv before Supabase and AI services are used
+- Core flows should continue to work offline, even when AI is unavailable
+- AI is assistive and optional, not a hard dependency for expense entry
+
+## Current focus
+
+Expense AI 2.0 is the first release aligned with the redesigned product direction. The next iterations can build on this foundation with deeper forecasting, notifications, smarter capture, and stronger release tooling.

@@ -1,26 +1,26 @@
 import 'dart:convert';
+
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
+
 import '../../domain/services/ai_service.dart';
 
 class GeminiService implements AiService {
-String apiKey = dotenv.env['GEMINI_API_KEY'] ?? "";
+  final String apiKey = dotenv.env['GEMINI_API_KEY'] ?? "";
 
   @override
   Future<String?> suggestCategory(String inputText) async {
+    if (apiKey.trim().isEmpty) return null;
     try {
-      // URL de l'API Gemini (REST)
       final String apiUrl =
           "https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=$apiKey";
 
-      // Construction du prompt
       final prompt =
-          "Tu es un assistant comptable. Classe cette dépense dans l'une de ces catégories : "
-          "'Alimentation', 'Transport', 'Logement', 'Loisirs', 'Santé', 'Autre'. "
-          "Réponds UNIQUEMENT par le nom de la catégorie. "
-          "Dépense: $inputText";
+          "Tu es un assistant comptable. Classe cette dÃ©pense dans l'une de ces catÃ©gories : "
+          "'Alimentation', 'Transport', 'Logement', 'Loisirs', 'SantÃ©', 'Autre'. "
+          "RÃ©ponds UNIQUEMENT par le nom de la catÃ©gorie. "
+          "DÃ©pense: $inputText";
 
-      // Corps de la requête JSON
       final body = jsonEncode({
         "contents": [
           {
@@ -31,42 +31,37 @@ String apiKey = dotenv.env['GEMINI_API_KEY'] ?? "";
         ],
       });
 
-      // Appel HTTP POST
       final response = await http.post(
         Uri.parse(apiUrl),
         headers: {"Content-Type": "application/json"},
         body: body,
       );
 
-      if (response.statusCode == 200) {
-        // Parsing de la réponse JSON
-        final data = jsonDecode(response.body);
-        // La structure de réponse Gemini est : candidates -> content -> parts -> text
-        final text = data['candidates'][0]['content']['parts'][0]['text'];
-        return text.trim();
-      } else {
-        // print("Erreur API Gemini: ${response.statusCode} - ${response.body}");
-        return null;
-      }
-    } catch (e) {
-      // print("Exception Gemini: $e");
+      if (response.statusCode != 200) return null;
+
+      final data = jsonDecode(response.body);
+      final text = data['candidates'][0]['content']['parts'][0]['text'];
+      return text.trim();
+    } catch (_) {
       return null;
     }
   }
 
-    @override
+  @override
   Future<String?> analyzeExpenses(String expenseSummary) async {
+    if (apiKey.trim().isEmpty) return null;
     try {
       final String apiUrl =
           "https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=$apiKey";
 
       final prompt =
-          "Tu es un conseiller financier expert. Voici le résumé des dépenses d'un utilisateur pour ce mois :\n\n"
+          "Tu es un conseiller financier expert. Voici le rÃ©sumÃ© des dÃ©penses d'un utilisateur pour ce mois :\n\n"
           "$expenseSummary\n\n"
-          "Fais une analyse concise (max 3 phrases) en donnant :\n"
-          "1. Un point positif.\n"
-          "2. Un point d'attention ou de conseil.\n"
-          "Sois encourageant mais direct.";
+          "RÃ©ponds en EXACTEMENT 3 lignes courtes au format:\n"
+          "Summary: ...\n"
+          "Watch: ...\n"
+          "Next: ...\n"
+          "Sois encourageant, concret et liÃ© aux chiffres.";
 
       final body = jsonEncode({
         "contents": [
@@ -84,16 +79,12 @@ String apiKey = dotenv.env['GEMINI_API_KEY'] ?? "";
         body: body,
       );
 
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        final text = data['candidates'][0]['content']['parts'][0]['text'];
-        return text.trim();
-      } else {
-        // print("Erreur API Gemini: ${response.body}");
-        return null;
-      }
-    } catch (e) {
-      // print("Exception Gemini: $e");
+      if (response.statusCode != 200) return null;
+
+      final data = jsonDecode(response.body);
+      final text = data['candidates'][0]['content']['parts'][0]['text'];
+      return text.trim();
+    } catch (_) {
       return null;
     }
   }
