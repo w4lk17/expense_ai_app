@@ -13,6 +13,7 @@ class PlanPage extends ConsumerWidget {
     final theme = Theme.of(context);
     final summary = ref.watch(monthlyFinanceSnapshotProvider);
     final budgets = ref.watch(categoryBudgetHealthProvider);
+    final alerts = ref.watch(budgetAlertsControllerProvider);
     final recurring = ref.watch(upcomingRecurringProvider);
     final currency = NumberFormat.currency(locale: 'fr_FR', symbol: 'FCFA');
 
@@ -92,6 +93,89 @@ class PlanPage extends ConsumerWidget {
                 ),
               ),
               const SizedBox(height: 16),
+              if (alerts.hasAlerts) ...[
+                Container(
+                  padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    color: theme.colorScheme.surface,
+                    borderRadius: BorderRadius.circular(28),
+                    border: Border.all(color: theme.colorScheme.outlineVariant),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('Alerts', style: theme.textTheme.titleLarge),
+                      const SizedBox(height: 4),
+                      Text(
+                        'These categories need attention now.',
+                        style: theme.textTheme.bodyMedium,
+                      ),
+                      const SizedBox(height: 18),
+                      ...alerts.activeAlerts.map((alert) {
+                        final color = switch (alert.level) {
+                          BudgetAlertLevel.warning70 => AppTheme.amber,
+                          BudgetAlertLevel.warning90 => const Color(0xFFC37B3A),
+                          BudgetAlertLevel.over100 => AppTheme.coral,
+                        };
+
+                        return Container(
+                          margin: const EdgeInsets.only(bottom: 12),
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            color: color.withValues(alpha: 0.09),
+                            borderRadius: BorderRadius.circular(22),
+                            border: Border.all(
+                              color: color.withValues(alpha: 0.25),
+                            ),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  Expanded(
+                                    child: Text(
+                                      alert.title,
+                                      style: theme.textTheme.titleMedium,
+                                    ),
+                                  ),
+                                  IconButton(
+                                    onPressed: () {
+                                      ref
+                                          .read(
+                                            budgetAlertsControllerProvider
+                                                .notifier,
+                                          )
+                                          .dismissAlert(alert);
+                                    },
+                                    icon: const Icon(Icons.close_rounded),
+                                    tooltip: 'Dismiss',
+                                  ),
+                                ],
+                              ),
+                              Text(
+                                alert.message,
+                                style: theme.textTheme.bodyLarge,
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                alert.suggestion,
+                                style: theme.textTheme.bodyMedium,
+                              ),
+                              const SizedBox(height: 8),
+                              Text(
+                                '${currency.format(alert.spent)} / ${currency.format(alert.limit)}',
+                                style: theme.textTheme.bodyMedium,
+                              ),
+                            ],
+                          ),
+                        );
+                      }),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 16),
+              ],
               Container(
                 padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(

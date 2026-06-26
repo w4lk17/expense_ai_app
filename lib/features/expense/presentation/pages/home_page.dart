@@ -11,8 +11,13 @@ import 'package:intl/intl.dart';
 
 class HomePage extends ConsumerStatefulWidget {
   final VoidCallback onOpenProfile;
+  final VoidCallback onOpenPlan;
 
-  const HomePage({super.key, required this.onOpenProfile});
+  const HomePage({
+    super.key,
+    required this.onOpenProfile,
+    required this.onOpenPlan,
+  });
 
   @override
   ConsumerState<HomePage> createState() => _HomePageState();
@@ -42,7 +47,9 @@ class _HomePageState extends ConsumerState<HomePage> {
   Future<void> _refreshInsight() async {
     final summary = ref.read(monthlyFinanceSnapshotProvider);
     final topCategories = ref.read(topSpendingCategoriesProvider);
-    if (summary.income == 0 && summary.expenses == 0 && topCategories.isEmpty) return;
+    if (summary.income == 0 && summary.expenses == 0 && topCategories.isEmpty) {
+      return;
+    }
 
     setState(() => _loadingInsight = true);
 
@@ -50,14 +57,22 @@ class _HomePageState extends ConsumerState<HomePage> {
       ..writeln("Income: ${summary.income.toStringAsFixed(2)} FCFA")
       ..writeln("Expenses: ${summary.expenses.toStringAsFixed(2)} FCFA")
       ..writeln("Budget total: ${summary.budgetTotal.toStringAsFixed(2)} FCFA")
-      ..writeln("Upcoming bills: ${summary.upcomingBills.toStringAsFixed(2)} FCFA")
-      ..writeln("Safe to spend: ${summary.safeToSpend.toStringAsFixed(2)} FCFA");
+      ..writeln(
+        "Upcoming bills: ${summary.upcomingBills.toStringAsFixed(2)} FCFA",
+      )
+      ..writeln(
+        "Safe to spend: ${summary.safeToSpend.toStringAsFixed(2)} FCFA",
+      );
 
     for (final item in topCategories) {
-      buffer.writeln("${item.category.name}: ${item.amount.toStringAsFixed(2)} FCFA");
+      buffer.writeln(
+        "${item.category.name}: ${item.amount.toStringAsFixed(2)} FCFA",
+      );
     }
 
-    final advice = await ref.read(expenseRepositoryProvider).analyzeExpenses(buffer.toString());
+    final advice = await ref
+        .read(expenseRepositoryProvider)
+        .analyzeExpenses(buffer.toString());
     if (!mounted) return;
 
     if (advice != null && advice.trim().isNotEmpty) {
@@ -89,6 +104,7 @@ class _HomePageState extends ConsumerState<HomePage> {
     final categories = ref.watch(topSpendingCategoriesProvider);
     final recurring = ref.watch(upcomingRecurringProvider);
     final pendingSync = ref.watch(pendingSyncCountProvider);
+    final alerts = ref.watch(budgetAlertsControllerProvider);
     final connection = ref.watch(connectivityProvider);
     final expensesAsync = ref.watch(expenseListProvider);
     final currency = NumberFormat.currency(locale: 'fr_FR', symbol: 'FCFA');
@@ -108,7 +124,10 @@ class _HomePageState extends ConsumerState<HomePage> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text("Your money, calmer", style: theme.textTheme.headlineMedium),
+                        Text(
+                          "Your money, calmer",
+                          style: theme.textTheme.headlineMedium,
+                        ),
                         const SizedBox(height: 6),
                         Text(
                           toBeginningOfSentenceCase(monthLabel) ?? monthLabel,
@@ -117,7 +136,10 @@ class _HomePageState extends ConsumerState<HomePage> {
                       ],
                     ),
                   ),
-                  _SyncPill(isOffline: connection == ConnectionStatus.offline, pendingSync: pendingSync),
+                  _SyncPill(
+                    isOffline: connection == ConnectionStatus.offline,
+                    pendingSync: pendingSync,
+                  ),
                   const SizedBox(width: 10),
                   InkWell(
                     onTap: widget.onOpenProfile,
@@ -125,7 +147,10 @@ class _HomePageState extends ConsumerState<HomePage> {
                     child: CircleAvatar(
                       radius: 22,
                       backgroundColor: theme.colorScheme.primaryContainer,
-                      child: Icon(Icons.person_rounded, color: theme.colorScheme.primary),
+                      child: Icon(
+                        Icons.person_rounded,
+                        color: theme.colorScheme.primary,
+                      ),
                     ),
                   ),
                 ],
@@ -133,6 +158,18 @@ class _HomePageState extends ConsumerState<HomePage> {
               const SizedBox(height: 24),
               _HeroCard(summary: summary, currency: currency),
               const SizedBox(height: 16),
+              if (alerts.hasAlerts) ...[
+                _NeedsAttentionCard(
+                  summary: alerts,
+                  onDismiss: (alert) {
+                    ref
+                        .read(budgetAlertsControllerProvider.notifier)
+                        .dismissAlert(alert);
+                  },
+                  onViewAll: widget.onOpenPlan,
+                ),
+                const SizedBox(height: 16),
+              ],
               Row(
                 children: [
                   Expanded(
@@ -160,7 +197,11 @@ class _HomePageState extends ConsumerState<HomePage> {
                       icon: Icons.auto_awesome_outlined,
                       onTap: () {
                         ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Smart capture is reserved for the next wave.')),
+                          const SnackBar(
+                            content: Text(
+                              'Smart capture is reserved for the next wave.',
+                            ),
+                          ),
                         );
                       },
                     ),
@@ -168,7 +209,11 @@ class _HomePageState extends ConsumerState<HomePage> {
                 ],
               ),
               const SizedBox(height: 16),
-              _InsightCard(insight: _aiInsight, isLoading: _loadingInsight, onRefresh: _refreshInsight),
+              _InsightCard(
+                insight: _aiInsight,
+                isLoading: _loadingInsight,
+                onRefresh: _refreshInsight,
+              ),
               const SizedBox(height: 16),
               if (!hasData)
                 _EmptyStateCard(onTap: _openComposer)
@@ -177,13 +222,19 @@ class _HomePageState extends ConsumerState<HomePage> {
                   title: 'Top categories',
                   subtitle: 'Where this month is going',
                   child: categories.isEmpty
-                      ? Text('Add a few expenses to see category patterns.', style: theme.textTheme.bodyMedium)
+                      ? Text(
+                          'Add a few expenses to see category patterns.',
+                          style: theme.textTheme.bodyMedium,
+                        )
                       : Column(
                           children: categories
                               .map(
                                 (item) => Padding(
                                   padding: const EdgeInsets.only(bottom: 12),
-                                  child: _CategoryRow(item: item, total: summary.expenses),
+                                  child: _CategoryRow(
+                                    item: item,
+                                    total: summary.expenses,
+                                  ),
                                 ),
                               )
                               .toList(),
@@ -193,7 +244,10 @@ class _HomePageState extends ConsumerState<HomePage> {
                 _SectionCard(
                   title: 'Upcoming bills',
                   subtitle: 'Recurring payments still ahead',
-                  trailing: Text(currency.format(summary.upcomingBills), style: theme.textTheme.titleMedium),
+                  trailing: Text(
+                    currency.format(summary.upcomingBills),
+                    style: theme.textTheme.titleMedium,
+                  ),
                   child: recurring.isEmpty
                       ? Text(
                           'No upcoming recurring payments for the rest of this month.',
@@ -202,7 +256,12 @@ class _HomePageState extends ConsumerState<HomePage> {
                       : Column(
                           children: recurring
                               .take(3)
-                              .map((item) => _RecurringRow(item: item, currency: currency))
+                              .map(
+                                (item) => _RecurringRow(
+                                  item: item,
+                                  currency: currency,
+                                ),
+                              )
                               .toList(),
                         ),
                 ),
@@ -212,7 +271,11 @@ class _HomePageState extends ConsumerState<HomePage> {
                   subtitle: 'Last 6 months',
                   child: SizedBox(
                     height: 180,
-                    child: _MiniTrendChart(expenses: ref.watch(allExpensesProvider).value ?? const <Expense>[]),
+                    child: _MiniTrendChart(
+                      expenses:
+                          ref.watch(allExpensesProvider).value ??
+                          const <Expense>[],
+                    ),
                   ),
                 ),
               ],
@@ -251,15 +314,25 @@ class _SyncPill extends StatelessWidget {
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-      decoration: BoxDecoration(color: color, borderRadius: BorderRadius.circular(18)),
+      decoration: BoxDecoration(
+        color: color,
+        borderRadius: BorderRadius.circular(18),
+      ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(isOffline ? Icons.cloud_off_rounded : Icons.cloud_done_rounded, size: 16, color: foreground),
+          Icon(
+            isOffline ? Icons.cloud_off_rounded : Icons.cloud_done_rounded,
+            size: 16,
+            color: foreground,
+          ),
           const SizedBox(width: 6),
           Text(
             label,
-            style: theme.textTheme.bodyMedium?.copyWith(color: foreground, fontWeight: FontWeight.w700),
+            style: theme.textTheme.bodyMedium?.copyWith(
+              color: foreground,
+              fontWeight: FontWeight.w700,
+            ),
           ),
         ],
       ),
@@ -287,7 +360,10 @@ class _HeroCard extends StatelessWidget {
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(32),
         gradient: LinearGradient(
-          colors: [theme.colorScheme.surface, theme.colorScheme.primaryContainer.withValues(alpha: 0.9)],
+          colors: [
+            theme.colorScheme.surface,
+            theme.colorScheme.primaryContainer.withValues(alpha: 0.9),
+          ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
@@ -300,12 +376,16 @@ class _HeroCard extends StatelessWidget {
           const SizedBox(height: 8),
           Text(
             currency.format(summary.safeToSpend),
-            style: theme.textTheme.headlineLarge?.copyWith(color: theme.colorScheme.onSurface),
+            style: theme.textTheme.headlineLarge?.copyWith(
+              color: theme.colorScheme.onSurface,
+            ),
           ),
           const SizedBox(height: 8),
           Text(
             '${summary.daysLeft} day${summary.daysLeft == 1 ? '' : 's'} left to pace your spending',
-            style: theme.textTheme.bodyMedium?.copyWith(color: theme.colorScheme.onSurfaceVariant),
+            style: theme.textTheme.bodyMedium?.copyWith(
+              color: theme.colorScheme.onSurfaceVariant,
+            ),
           ),
           const SizedBox(height: 18),
           ClipRRect(
@@ -321,10 +401,16 @@ class _HeroCard extends StatelessWidget {
           Row(
             children: [
               Expanded(
-                child: _MetricStat(label: 'Income', value: currency.format(summary.income)),
+                child: _MetricStat(
+                  label: 'Income',
+                  value: currency.format(summary.income),
+                ),
               ),
               Expanded(
-                child: _MetricStat(label: 'Spent', value: currency.format(summary.expenses)),
+                child: _MetricStat(
+                  label: 'Spent',
+                  value: currency.format(summary.expenses),
+                ),
               ),
               Expanded(
                 child: _MetricStat(
@@ -368,7 +454,12 @@ class _QuickActionCard extends StatelessWidget {
   final IconData icon;
   final VoidCallback onTap;
 
-  const _QuickActionCard({required this.label, required this.subtitle, required this.icon, required this.onTap});
+  const _QuickActionCard({
+    required this.label,
+    required this.subtitle,
+    required this.icon,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -403,7 +494,11 @@ class _InsightCard extends StatelessWidget {
   final bool isLoading;
   final Future<void> Function() onRefresh;
 
-  const _InsightCard({required this.insight, required this.isLoading, required this.onRefresh});
+  const _InsightCard({
+    required this.insight,
+    required this.isLoading,
+    required this.onRefresh,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -421,23 +516,115 @@ class _InsightCard extends StatelessWidget {
         children: [
           Row(
             children: [
-              Icon(Icons.auto_awesome_rounded, color: theme.colorScheme.secondary),
+              Icon(
+                Icons.auto_awesome_rounded,
+                color: theme.colorScheme.secondary,
+              ),
               const SizedBox(width: 10),
-              Expanded(child: Text('Monthly insight', style: theme.textTheme.titleMedium)),
-              TextButton(onPressed: isLoading ? null : onRefresh, child: const Text('Refresh')),
+              Expanded(
+                child: Text(
+                  'Monthly insight',
+                  style: theme.textTheme.titleMedium,
+                ),
+              ),
+              TextButton(
+                onPressed: isLoading ? null : onRefresh,
+                child: const Text('Refresh'),
+              ),
             ],
           ),
           const SizedBox(height: 12),
           if (isLoading)
             const Center(
-              child: Padding(padding: EdgeInsets.all(12), child: CircularProgressIndicator()),
+              child: Padding(
+                padding: EdgeInsets.all(12),
+                child: CircularProgressIndicator(),
+              ),
             )
           else
             Text(
               insight ??
                   'Summary: Your month is still taking shape.\nWatch: Keep logging every expense.\nNext: Set a budget to unlock better guidance.',
-              style: theme.textTheme.bodyLarge?.copyWith(color: theme.colorScheme.onSurface),
+              style: theme.textTheme.bodyLarge?.copyWith(
+                color: theme.colorScheme.onSurface,
+              ),
             ),
+        ],
+      ),
+    );
+  }
+}
+
+class _NeedsAttentionCard extends StatelessWidget {
+  final BudgetAlertsSummary summary;
+  final ValueChanged<BudgetAlertState> onDismiss;
+  final VoidCallback onViewAll;
+
+  const _NeedsAttentionCard({
+    required this.summary,
+    required this.onDismiss,
+    required this.onViewAll,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final alert = summary.highestPriorityAlert;
+    if (alert == null) return const SizedBox.shrink();
+
+    final color = switch (alert.level) {
+      BudgetAlertLevel.warning70 => AppTheme.amber,
+      BudgetAlertLevel.warning90 => const Color(0xFFC37B3A),
+      BudgetAlertLevel.over100 => AppTheme.coral,
+    };
+
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: theme.colorScheme.surface,
+        borderRadius: BorderRadius.circular(28),
+        border: Border.all(color: color.withValues(alpha: 0.35)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.warning_amber_rounded, color: color),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  'Needs attention',
+                  style: theme.textTheme.titleMedium,
+                ),
+              ),
+              if (summary.visibleCount > 1)
+                Text(
+                  '${summary.visibleCount} alerts',
+                  style: theme.textTheme.bodyMedium,
+                ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Text(alert.title, style: theme.textTheme.titleLarge),
+          const SizedBox(height: 6),
+          Text(alert.message, style: theme.textTheme.bodyLarge),
+          const SizedBox(height: 6),
+          Text(alert.suggestion, style: theme.textTheme.bodyMedium),
+          const SizedBox(height: 14),
+          Row(
+            children: [
+              FilledButton.tonal(
+                onPressed: onViewAll,
+                child: const Text('View all'),
+              ),
+              const SizedBox(width: 8),
+              TextButton(
+                onPressed: () => onDismiss(alert),
+                child: const Text('Dismiss'),
+              ),
+            ],
+          ),
         ],
       ),
     );
@@ -450,7 +637,12 @@ class _SectionCard extends StatelessWidget {
   final Widget child;
   final Widget? trailing;
 
-  const _SectionCard({required this.title, required this.subtitle, required this.child, this.trailing});
+  const _SectionCard({
+    required this.title,
+    required this.subtitle,
+    required this.child,
+    this.trailing,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -505,7 +697,10 @@ class _CategoryRow extends StatelessWidget {
           radius: 18,
           backgroundColor: Color(item.category.color ?? 0xFFE7DFD1),
           child: Icon(
-            IconData(item.category.icon ?? Icons.category.codePoint, fontFamily: 'MaterialIcons'),
+            IconData(
+              item.category.icon ?? Icons.category.codePoint,
+              fontFamily: 'MaterialIcons',
+            ),
             color: Colors.white,
             size: 18,
           ),
@@ -517,8 +712,16 @@ class _CategoryRow extends StatelessWidget {
             children: [
               Row(
                 children: [
-                  Expanded(child: Text(item.category.name, style: theme.textTheme.titleMedium)),
-                  Text('${(ratio * 100).round()}%', style: theme.textTheme.bodyMedium),
+                  Expanded(
+                    child: Text(
+                      item.category.name,
+                      style: theme.textTheme.titleMedium,
+                    ),
+                  ),
+                  Text(
+                    '${(ratio * 100).round()}%',
+                    style: theme.textTheme.bodyMedium,
+                  ),
                 ],
               ),
               const SizedBox(height: 8),
@@ -558,7 +761,10 @@ class _RecurringRow extends StatelessWidget {
             radius: 18,
             backgroundColor: theme.colorScheme.surfaceContainerHighest,
             child: Icon(
-              IconData(item.category?.icon ?? Icons.event_repeat.codePoint, fontFamily: 'MaterialIcons'),
+              IconData(
+                item.category?.icon ?? Icons.event_repeat.codePoint,
+                fontFamily: 'MaterialIcons',
+              ),
               size: 18,
               color: theme.colorScheme.primary,
             ),
@@ -569,18 +775,25 @@ class _RecurringRow extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  item.expense.description ?? item.category?.name ?? 'Recurring bill',
+                  item.expense.description ??
+                      item.category?.name ??
+                      'Recurring bill',
                   style: theme.textTheme.titleMedium,
                 ),
                 const SizedBox(height: 2),
                 Text(
-                  dueDate == null ? 'No due date' : DateFormat('dd MMM').format(dueDate),
+                  dueDate == null
+                      ? 'No due date'
+                      : DateFormat('dd MMM').format(dueDate),
                   style: theme.textTheme.bodyMedium,
                 ),
               ],
             ),
           ),
-          Text(currency.format(item.expense.amount), style: theme.textTheme.titleMedium),
+          Text(
+            currency.format(item.expense.amount),
+            style: theme.textTheme.titleMedium,
+          ),
         ],
       ),
     );
@@ -612,9 +825,17 @@ class _MiniTrendChart extends StatelessWidget {
     }
 
     final keys = monthlyTotals.keys.toList();
-    final maxValue = monthlyTotals.values.fold<double>(0, (max, value) => value > max ? value : max);
+    final maxValue = monthlyTotals.values.fold<double>(
+      0,
+      (max, value) => value > max ? value : max,
+    );
     if (maxValue == 0) {
-      return Center(child: Text('More history will unlock your trend view.', style: theme.textTheme.bodyMedium));
+      return Center(
+        child: Text(
+          'More history will unlock your trend view.',
+          style: theme.textTheme.bodyMedium,
+        ),
+      );
     }
 
     return BarChart(
@@ -624,9 +845,15 @@ class _MiniTrendChart extends StatelessWidget {
         borderData: FlBorderData(show: false),
         gridData: const FlGridData(show: false),
         titlesData: FlTitlesData(
-          leftTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-          rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-          topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+          leftTitles: const AxisTitles(
+            sideTitles: SideTitles(showTitles: false),
+          ),
+          rightTitles: const AxisTitles(
+            sideTitles: SideTitles(showTitles: false),
+          ),
+          topTitles: const AxisTitles(
+            sideTitles: SideTitles(showTitles: false),
+          ),
           bottomTitles: AxisTitles(
             sideTitles: SideTitles(
               showTitles: true,
@@ -636,7 +863,20 @@ class _MiniTrendChart extends StatelessWidget {
                 return Padding(
                   padding: const EdgeInsets.only(top: 8),
                   child: Text(
-                    ['J', 'F', 'M', 'A', 'M', 'J', 'J', 'A', 'S', 'O', 'N', 'D'][month - 1],
+                    [
+                      'J',
+                      'F',
+                      'M',
+                      'A',
+                      'M',
+                      'J',
+                      'J',
+                      'A',
+                      'S',
+                      'O',
+                      'N',
+                      'D',
+                    ][month - 1],
                     style: theme.textTheme.bodyMedium?.copyWith(fontSize: 11),
                   ),
                 );
@@ -652,7 +892,9 @@ class _MiniTrendChart extends StatelessWidget {
                 toY: entry.value.value,
                 width: 18,
                 color: theme.colorScheme.primary,
-                borderRadius: const BorderRadius.vertical(top: Radius.circular(6)),
+                borderRadius: const BorderRadius.vertical(
+                  top: Radius.circular(6),
+                ),
               ),
             ],
           );
@@ -680,14 +922,20 @@ class _EmptyStateCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Start your month with clarity', style: theme.textTheme.titleLarge),
+          Text(
+            'Start your month with clarity',
+            style: theme.textTheme.titleLarge,
+          ),
           const SizedBox(height: 10),
           Text(
             'Add your first expense or income to unlock safe-to-spend, recurring bill forecasting, and monthly AI insights.',
             style: theme.textTheme.bodyLarge,
           ),
           const SizedBox(height: 18),
-          ElevatedButton(onPressed: () => onTap(isIncome: false), child: const Text('Add first transaction')),
+          ElevatedButton(
+            onPressed: () => onTap(isIncome: false),
+            child: const Text('Add first transaction'),
+          ),
         ],
       ),
     );

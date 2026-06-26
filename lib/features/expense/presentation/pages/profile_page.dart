@@ -52,6 +52,7 @@ class ProfilePage extends ConsumerWidget {
     final pendingSync = ref.watch(pendingSyncCountProvider);
     final connection = ref.watch(connectivityProvider);
     final summary = ref.watch(monthlyFinanceSnapshotProvider);
+    final budgetAlerts = ref.watch(budgetAlertsControllerProvider);
 
     return ListView(
       padding: const EdgeInsets.fromLTRB(16, 20, 16, 40),
@@ -108,6 +109,40 @@ class ProfilePage extends ConsumerWidget {
                 label:
                     'Safe to spend ${NumberFormat.currency(locale: 'fr_FR', symbol: 'FCFA').format(summary.safeToSpend)}',
                 icon: Icons.wallet_rounded,
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 16),
+        Container(
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            color: theme.colorScheme.surface,
+            borderRadius: BorderRadius.circular(28),
+            border: Border.all(color: theme.colorScheme.outlineVariant),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('Budget alerts', style: theme.textTheme.titleLarge),
+              const SizedBox(height: 4),
+              Text(
+                'Send local alerts when a category budget crosses 70%, 90%, or 100%.',
+                style: theme.textTheme.bodyMedium,
+              ),
+              const SizedBox(height: 12),
+              SwitchListTile.adaptive(
+                contentPadding: EdgeInsets.zero,
+                title: const Text('Local budget notifications'),
+                subtitle: const Text(
+                  'In-app alerts remain visible even if notifications are off.',
+                ),
+                value: budgetAlerts.notificationsEnabled,
+                onChanged: (value) {
+                  ref
+                      .read(budgetAlertsControllerProvider.notifier)
+                      .setNotificationsEnabled(value);
+                },
               ),
             ],
           ),

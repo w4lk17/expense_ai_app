@@ -1,14 +1,18 @@
 import 'package:expense_ai_app/features/ai_advisor/data/services/ai_service_factory.dart';
 import 'package:expense_ai_app/features/ai_advisor/presentation/providers/ai_provider_settings.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:expense_ai_app/core/providers/database_provider.dart';
 import 'package:expense_ai_app/features/expense/data/datasources/database.dart';
 import 'package:expense_ai_app/features/expense/data/repositories/expense_repository_impl.dart';
+import 'package:expense_ai_app/features/expense/data/services/budget_alert_notification_service.dart';
 import 'package:expense_ai_app/features/expense/domain/repositories/expense_repository.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 enum BudgetStatus { underControl, caution, overLimit }
+
+enum BudgetAlertLevel { warning70, warning90, over100 }
 
 enum ActivityDateFilter { all, thisMonth, last30Days, thisYear }
 
@@ -100,7 +104,264 @@ class MonthlyFinanceSnapshot {
       usageBase <= 0 ? 0 : (expenses / usageBase).clamp(0.0, 1.0);
 }
 
-// Provider pour le Repository
+class BudgetAlertState {
+  final int categoryId;
+  final String categoryName;
+  final double spent;
+  final double limit;
+  final double ratio;
+  final BudgetAlertLevel level;
+  final String message;
+  final String suggestion;
+  final DateTime triggeredAt;
+  final bool isDismissed;
+
+  const BudgetAlertState({
+    required this.categoryId,
+    required this.categoryName,
+    required this.spent,
+    required this.limit,
+    required this.ratio,
+    required this.level,
+    required this.message,
+    required this.suggestion,
+    required this.triggeredAt,
+    required this.isDismissed,
+  });
+
+  String get title {
+    switch (level) {
+      case BudgetAlertLevel.warning70:
+        return '$categoryName is nearing its budget';
+      case BudgetAlertLevel.warning90:
+        return '$categoryName is almost over budget';
+      case BudgetAlertLevel.over100:
+        return '$categoryName is over budget';
+    }
+  }
+}
+
+class BudgetAlertsSummary {
+  final List<BudgetAlertState> activeAlerts;
+  final bool notificationsEnabled;
+
+  const BudgetAlertsSummary({
+    this.activeAlerts = const [],
+    this.notificationsEnabled = true,
+  });
+
+  BudgetAlertState? get highestPriorityAlert =>
+      activeAlerts.isEmpty ? null : activeAlerts.first;
+
+  int get visibleCount => activeAlerts.length;
+
+  bool get hasAlerts => activeAlerts.isNotEmpty;
+
+  BudgetAlertsSummary copyWith({
+    List<BudgetAlertState>? activeAlerts,
+    bool? notificationsEnabled,
+  }) {
+    return BudgetAlertsSummary(
+      activeAlerts: activeAlerts ?? this.activeAlerts,
+      notificationsEnabled: notificationsEnabled ?? this.notificationsEnabled,
+    );
+  }
+}
+
+class BudgetAlertsController extends StateNotifier<BudgetAlertsSummary> {
+  BudgetAlertsController(this.ref, this._notificationService)
+    : super(const BudgetAlertsSummary());
+
+  final Ref ref;
+  final BudgetAlertNotificationService _notificationService;
+
+  SharedPreferences? _prefs;
+  bool _isInitialized = false;
+
+  static const String _notificationsEnabledKey = 'budget_alerts_enabled';
+
+  Future<void> initialize() async {
+    if (_isInitialized) return;
+
+    _prefs = await SharedPreferences.getInstance();
+    await _notificationService.initialize();
+
+    final enabled = _prefs?.getBool(_notificationsEnabledKey) ?? true;
+    state = state.copyWith(notificationsEnabled: enabled);
+
+    if (enabled) {
+      await _notificationService.requestPermissions();
+    }
+
+    _isInitialized = true;
+    await reconcile();
+  }
+
+  Future<void> reconcile() async {
+    if (!_isInitialized) return;
+
+    final now = DateTime.now();
+    final items = ref.read(categoryBudgetHealthProvider);
+    final alerts = <BudgetAlertState>[];
+
+    for (final item in items) {
+      final level = budgetAlertLevelFor(item.ratio);
+      if (level == null) continue;
+
+      final dismissed =
+          _prefs?.getBool(
+            _dismissKey(
+              year: now.year,
+              month: now.month,
+              categoryId: item.category.id,
+              level: level,
+            ),
+          ) ??
+          false;
+
+      final alert = BudgetAlertState(
+        categoryId: item.category.id,
+        categoryName: item.category.name,
+        spent: item.spent,
+        limit: item.limit,
+        ratio: item.ratio,
+        level: level,
+        message: budgetAlertMessageFor(level, item.category.name),
+        suggestion: budgetAlertSuggestionFor(level),
+        triggeredAt: now,
+        isDismissed: dismissed,
+      );
+
+      if (!dismissed) {
+        alerts.add(alert);
+        await _notifyIfNeeded(alert, now);
+      }
+    }
+
+    alerts.sort((left, right) {
+      final priority = budgetAlertPriority(
+        right.level,
+      ).compareTo(budgetAlertPriority(left.level));
+      if (priority != 0) return priority;
+      return right.ratio.compareTo(left.ratio);
+    });
+
+    state = state.copyWith(activeAlerts: alerts);
+  }
+
+  Future<void> dismissAlert(BudgetAlertState alert) async {
+    if (!_isInitialized) return;
+
+    final now = DateTime.now();
+    await _prefs?.setBool(
+      _dismissKey(
+        year: now.year,
+        month: now.month,
+        categoryId: alert.categoryId,
+        level: alert.level,
+      ),
+      true,
+    );
+
+    state = state.copyWith(
+      activeAlerts: state.activeAlerts
+          .where(
+            (item) =>
+                item.categoryId != alert.categoryId ||
+                item.level != alert.level,
+          )
+          .toList(),
+    );
+  }
+
+  Future<void> setNotificationsEnabled(bool enabled) async {
+    if (!_isInitialized) {
+      await initialize();
+    }
+
+    await _prefs?.setBool(_notificationsEnabledKey, enabled);
+    state = state.copyWith(notificationsEnabled: enabled);
+
+    if (enabled) {
+      await _notificationService.requestPermissions();
+    }
+  }
+
+  Future<void> _notifyIfNeeded(BudgetAlertState alert, DateTime now) async {
+    if (!state.notificationsEnabled) return;
+
+    final key = _notifiedKey(
+      year: now.year,
+      month: now.month,
+      categoryId: alert.categoryId,
+    );
+    final previous = _prefs?.getString(key);
+    final previousLevel = previous == null
+        ? null
+        : BudgetAlertLevel.values.firstWhere(
+            (item) => item.name == previous,
+            orElse: () => BudgetAlertLevel.warning70,
+          );
+
+    if (previousLevel != null &&
+        budgetAlertPriority(previousLevel) >=
+            budgetAlertPriority(alert.level)) {
+      return;
+    }
+
+    await _notificationService.showBudgetAlert(
+      notificationId: _notificationId(
+        year: now.year,
+        month: now.month,
+        categoryId: alert.categoryId,
+      ),
+      title: alert.title,
+      body:
+          '${alert.message} ${alert.suggestion} (${alert.spent.toStringAsFixed(0)} / ${alert.limit.toStringAsFixed(0)} FCFA)',
+    );
+
+    await _prefs?.setString(key, alert.level.name);
+  }
+
+  String _dismissKey({
+    required int year,
+    required int month,
+    required int categoryId,
+    required BudgetAlertLevel level,
+  }) {
+    return 'budget_alert_dismissed_${year}_${month}_${categoryId}_${level.name}';
+  }
+
+  String _notifiedKey({
+    required int year,
+    required int month,
+    required int categoryId,
+  }) {
+    return 'budget_alert_notified_${year}_${month}_$categoryId';
+  }
+
+  int _notificationId({
+    required int year,
+    required int month,
+    required int categoryId,
+  }) {
+    return (year * 100000) + (month * 1000) + categoryId;
+  }
+}
+
+final budgetAlertNotificationServiceProvider =
+    Provider<BudgetAlertNotificationService>((ref) {
+      return LocalBudgetAlertNotificationService();
+    });
+
+final budgetAlertsControllerProvider =
+    StateNotifierProvider<BudgetAlertsController, BudgetAlertsSummary>((ref) {
+      return BudgetAlertsController(
+        ref,
+        ref.watch(budgetAlertNotificationServiceProvider),
+      );
+    });
+
 final expenseRepositoryProvider = Provider<ExpenseRepository>((ref) {
   final db = ref.watch(databaseProvider);
   final supabase = Supabase.instance.client;
@@ -415,4 +676,44 @@ BudgetStatus budgetStatusFor(double ratio) {
   if (ratio >= 1) return BudgetStatus.overLimit;
   if (ratio >= 0.7) return BudgetStatus.caution;
   return BudgetStatus.underControl;
+}
+
+BudgetAlertLevel? budgetAlertLevelFor(double ratio) {
+  if (ratio >= 1) return BudgetAlertLevel.over100;
+  if (ratio >= 0.9) return BudgetAlertLevel.warning90;
+  if (ratio >= 0.7) return BudgetAlertLevel.warning70;
+  return null;
+}
+
+int budgetAlertPriority(BudgetAlertLevel level) {
+  switch (level) {
+    case BudgetAlertLevel.warning70:
+      return 1;
+    case BudgetAlertLevel.warning90:
+      return 2;
+    case BudgetAlertLevel.over100:
+      return 3;
+  }
+}
+
+String budgetAlertMessageFor(BudgetAlertLevel level, String categoryName) {
+  switch (level) {
+    case BudgetAlertLevel.warning70:
+      return '$categoryName has crossed 70% of its monthly budget.';
+    case BudgetAlertLevel.warning90:
+      return '$categoryName has crossed 90% of its monthly budget.';
+    case BudgetAlertLevel.over100:
+      return '$categoryName is now over budget for this month.';
+  }
+}
+
+String budgetAlertSuggestionFor(BudgetAlertLevel level) {
+  switch (level) {
+    case BudgetAlertLevel.warning70:
+      return 'Slow spending here before the category becomes a problem.';
+    case BudgetAlertLevel.warning90:
+      return 'Trim this category now to avoid going over the limit.';
+    case BudgetAlertLevel.over100:
+      return 'Pause non-essential spending in this category first.';
+  }
 }

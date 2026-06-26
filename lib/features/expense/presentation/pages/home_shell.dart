@@ -1,12 +1,12 @@
 import 'package:expense_ai_app/core/providers/connectivity_provider.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:expense_ai_app/features/auth/presentation/providers/auth_provider.dart';
-import 'package:expense_ai_app/features/expense/presentation/providers/expense_provider.dart';
 import 'package:expense_ai_app/features/expense/presentation/pages/activity_page.dart';
 import 'package:expense_ai_app/features/expense/presentation/pages/home_page.dart';
 import 'package:expense_ai_app/features/expense/presentation/pages/plan_page.dart';
 import 'package:expense_ai_app/features/expense/presentation/pages/profile_page.dart';
+import 'package:expense_ai_app/features/expense/presentation/providers/expense_provider.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class HomeShell extends ConsumerStatefulWidget {
   const HomeShell({super.key});
@@ -17,11 +17,29 @@ class HomeShell extends ConsumerStatefulWidget {
 
 class _HomeShellState extends ConsumerState<HomeShell> {
   int _currentIndex = 0;
+  ProviderSubscription<List<CategoryBudgetHealth>>? _budgetHealthSubscription;
 
   @override
   void initState() {
     super.initState();
-    Future.microtask(_syncData);
+    Future.microtask(() async {
+      await _syncData();
+      await ref.read(budgetAlertsControllerProvider.notifier).initialize();
+    });
+
+    _budgetHealthSubscription = ref.listenManual<List<CategoryBudgetHealth>>(
+      categoryBudgetHealthProvider,
+      (_, _) {
+        ref.read(budgetAlertsControllerProvider.notifier).reconcile();
+      },
+      fireImmediately: true,
+    );
+  }
+
+  @override
+  void dispose() {
+    _budgetHealthSubscription?.close();
+    super.dispose();
   }
 
   Future<void> _syncData() async {
@@ -38,7 +56,10 @@ class _HomeShellState extends ConsumerState<HomeShell> {
     final connectionStatus = ref.watch(connectivityProvider);
 
     final pages = [
-      HomePage(onOpenProfile: () => setState(() => _currentIndex = 3)),
+      HomePage(
+        onOpenProfile: () => setState(() => _currentIndex = 3),
+        onOpenPlan: () => setState(() => _currentIndex = 2),
+      ),
       const ActivityPage(),
       const PlanPage(),
       const ProfilePage(),
@@ -71,7 +92,7 @@ class _HomeShellState extends ConsumerState<HomeShell> {
                     const SizedBox(width: 10),
                     Expanded(
                       child: Text(
-                        "Offline mode active. New entries stay local and sync later.",
+                        'Offline mode active. New entries stay local and sync later.',
                         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                           color: Theme.of(
                             context,
